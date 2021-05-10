@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<!--html lang="en"-->
+<head>
+    <!--meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"-->
+    <title>{%form_title%}</title>
+    <link rel="stylesheet" href="../wwwroot/custom/css/cet.css">   
+
+</head>
+<body>
+    <!-- vertical-align: baseline|length|sub|super|top|text-top|middle|bottom|text-bottom|initial|inherit;  -->     
+    
+    <h3>{... Form uProcessa</h3><small>[From Delphi]</small><h3>...}</h3>
+    
+    
+    <!--div id="circ_center">2</div-->
+    
+
+   
+    
+
+    <div class="container">        
+        <div id="stepProgressBar">
+            <div class="step">
+                <p class="step-text">About</p>
+                <div class="bullet">1</div>
+            </div>
+            <div class="step">
+                <p class="step-text">Contact</p>
+                <div class="bullet">2</div>
+            </div>
+            <div class="step">
+                <p class="step-text">Step 3</p>
+                <div class="bullet">3</div>
+            </div>
+            <div class="step">
+                <p class="step-text">Step 4</p>
+                <div class="bullet ">4</div>
+            </div>
+        </div>
+    <div id="main">
+        <p id="content"  class="text-center">Step Number 1</p>
+        <button id="previousBtn" >Previous</button>
+        <button id="nextBtn">Next</button>
+        <button id="finishBtn" >Finish</button>
+    </div>
+    </div>
+
+
+ 
+   <script>
+
+const  previousBtn  =  document.getElementById('previousBtn');
+const  nextBtn  =  document.getElementById('nextBtn');
+const  finishBtn  =  document.getElementById('finishBtn');
+const  content  =  document.getElementById('content');
+const  bullets  =  [...document.querySelectorAll('.bullet')];
+const  steps  =  [...document.querySelectorAll('.step-text')];
+
+const MAX_STEPS = 4;
+let currentStep = 1;
+steps[currentStep-1].classList.add('current');
+
+//avança etapa
+//bullets[currentStep  -  1].classList.add('completed');
+//currentStep  +=  1;
+//steps[currentStep-1].classList.add('current');
+
+
+nextBtn.addEventListener('click',  ()  =>  {
+	bullets[currentStep-1].classList.add('completed');
+	steps[currentStep-1].classList.remove('current');
+    currentStep  +=  1;
+    steps[currentStep-1].classList.add('current');
+	previousBtn.disabled  =  false;
+	if  (currentStep  ===  MAX_STEPS)  {
+		nextBtn.disabled  =  true;
+		finishBtn.disabled  =  false;
+	}
+	content.innerText  =  `Step Number ${currentStep}`;
+});
+
+
+previousBtn.addEventListener('click',  ()  =>  {
+	bullets[currentStep - 2].classList.remove('completed');
+	steps[currentStep - 1].classList.remove('current');
+    currentStep  -=  1;
+    steps[currentStep-1].classList.add('current');    
+	nextBtn.disabled  =  false;
+	finishBtn.disabled  =  true;
+	if  (currentStep  ===  1)  {
+		previousBtn.disabled  =  true;
+	}
+	content.innerText  =  `Step Number ${currentStep}`;
+});
+
+finishBtn.addEventListener('click',  ()  =>  {
+	location.reload();
+});
+
+
+
+   </script> 
+
+    
+</body>
+</html>
+
+
+
+<!--div id="page-wrapper">
+   <h1> Form uProcessa [From Delphi] </h1>
+</div-->

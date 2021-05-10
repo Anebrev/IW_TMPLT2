@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  	<title>SGX Login</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,900&display=swap" rel="stylesheet">
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">	
+	<link rel="stylesheet" href="../wwwroot/custom/login-form-17/css/style.css">
+	<link rel="stylesheet" href="../wwwroot/custom/cet_css/style.css">
+
+	<style>
+		.center {
+		  text-align: center;
+		  border: 0px solid green;
+		  margin: 0 auto;
+		}
+	</style>
+	
+
+</head>
+
+<body>
+
+	<!--Delphi Objects-->
+	<div class="clearfix" style="display:none">{%IWBTN_LOGIN%}{%IWBTN_PGHOME%}</div>
+
+	<section class="ftco-section">
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-md-6 text-center mb-5">
+					<!--h2 class="heading-section">Login #07</h2-->
+				</div>
+			</div>
+			<div class="row justify-content-center">
+				<div class="col-md-12 col-lg-10">
+					<div class="wrap d-md-flex">
+
+						<!--div class="text-wrap p-4 p-lg-5 text-center d-flex align-items-center order-md-last"-->
+						<div class="order-md-last d-flex  align-items-center center">
+						
+
+							<!--div class="text w-100"-->	
+							<div class="center">
+								<h3>Bem vindo ao Login do </h3>
+							    <h2 style="color: rgba(65, 167, 226, 0.856)">Sistema SGX</h2>										
+								<br />
+								<div id="rcorners2"> 
+									Não possue acesso?									
+									<p>Abra um pitstop em:</p>
+									<a href="" style="color: rgba(65, 167, 226, 0.856); font-size:small;">  [Acesso MAO/Service Client/SGX] </a>
+								</div>								
+								<!--a href="#" class="btn btn-white btn-outline-white">Sign Up</a-->
+							</div>
+							
+
+							
+
+							
+							<!--div style="text-align:center">
+								Esse texto vai ficar centralizado.
+							<p>Este parágrafo também.</p>
+							</div-->								
+
+			      		</div>
+						<div class="login-wrap p-4 p-lg-5">
+			      	<div class="d-flex">
+			      		<div class="w-100">
+			      			<h3 class="mb-4">Efetue o login no sistema</h3>
+			      		</div>
+							
+			      	</div>
+							<form action="#" class="signin-form">
+			      		<div class="form-group mb-3">
+			      			<label class="label" for="name">Usuário</label>
+							  {%IWEDT_USR%}
+			      			<!--input type="text" class="form-control" placeholder="Username" required-->
+			      		</div>
+		            <div class="form-group mb-3">
+		            	<label class="label" for="password">Senha</label>
+						{%IWEDT_PASS%}						
+		              	<!--input type="password" class="form-control" placeholder="Password" required-->
+		            </div>
+										
+
+		            <div class="form-group">						
+		            	<button type="submit" class="form-control btn btn-secondary submit px-3" onclick="javascript: Login();">Log In</button>												
+						<!--button type="submit" class="form-control btn btn-secondary submit px-3" id="IWBTN_LOGIN">Sign In 2</button --> <!-- click by ID-->
+					</div>
+		            <div class="form-group d-md-flex">
+		            	<div class="w-50 text-left">
+			            	<label class="checkbox-wrap checkbox-secondary mb-0">Lembrar usuário
+									  <input type="checkbox" checked>
+									  <span class="checkmark"></span>
+										</label>
+									</div>
+									<div class="w-50 text-md-right">
+										<a href="#">? Esqueci minha senha</a>
+									</div>
+		            </div>
+		          </form>
+		        </div>
+		      		</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<script src="../wwwroot/custom/login-form-17/js/jquery.min.js"></script>
+	<script src="../wwwroot/custom/login-form-17/js/popper.js"></script>
+	<script src="../wwwroot/custom/login-form-17/js/bootstrap.min.js"></script>
+	<script src="../wwwroot/custom/login-form-17/js/main.js"></script>
+
+
+
+
+
+
+
+	<script>
+				
+	
+		function Login() {    
+			  debugger;                                        
+	
+			  AddChangedControl('IWEDT_USR');   // to get the new value when using onAsyncClick
+
+			  var usr = document.getElementById('IWEDT_USR').value;
+			  var psw = document.getElementById('IWEDT_PASS').value;
+			  IWBTN_LOGIN.click();
+	
+		  };	  
+
+	  /*function Login(pUser, pPass) {    
+			  debugger;
+											
+			  var usr = pUser;
+			  var psw = pPass;
+			  IWBTN_LOGIN.click();
+	
+		  };*/		  
+	
+	
+	
+	</script>	
+
+
+
+
+
+</body>
+	
+</html>
+

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<head>
+    <title>[pageTitle]</title>    
+    <!--link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">    
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"-->        
+    <!--link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css"-->        
+</head>
+<body>
+    
+
+    <!--div id="page-wrapper"-->
+
+        <!--h1> Form uConsolida [From Delphi] </h1-->  
+        <a href="javascript: fncExecutar('ProcDataTable', 0);"> Processa DataTable </a> <br>        
+        <a href="javascript: fncExecutar('ProcDataTable_json', 0);"> Processa DataTable JSON </a> 
+        <!--button type="submit" class="form-control btn btn-secondary submit px-3" onclick="javascript: fncExecutar('ProcDataTable', 0);">Processa DataTable</button-->       
+        {%IWE_Filter%}
+       <!-- {%IWT_DATATABLE%} -->
+               
+        
+        <table class="table table-striped table-bordered mydatatable2" style="width:50%">        
+            <thead>
+                <tr>                    
+                    <th>ID</th>   
+                    <th>Field1</th> 
+                    <th>Field2</th> 
+                    <th>Field3</th> 
+                </tr>           
+            </thead>
+        </table>
+
+
+    <!--/div-->
+
+
+
+
+
+    <!--script src="../wwwroot/MatAdmLTE/plugins/jquery/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"> </script-->
+    <!--script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"> </script-->
+
+
+<script>
+
+
+    /*$('.mydatatable').DataTable().destroy();        
+    $('.mydatatable').DataTable();*/
+
+    /*$('.mydatatable').DataTable( {                        
+            "sorting": false
+    } );*/
+
+    /*var table = $('.mydatatable').DataTable( {                        
+            "sorting": false
+    } );*/
+
+
+
+    
+        //$('.mydatatable2').DataTable().destroy();        
+        var table = $('.mydatatable2').DataTable( {              
+          "ajax" : "json_sample.json",
+              "columns"  :   [
+                  { "data"   :   "id"     },
+                  { "data"   :   "field1" },
+                  { "data"   :   "field2" },
+                  { "data"   :   "field3" }
+              ]
+              ,"sorting": false
+        } );   
+
+
+
+
+</script>
+    
+</body>
+</html>
