@@ -3,7 +3,7 @@
         <ProjectGuid>{ED8B5099-1A4B-4E65-9A0E-87BC6F2E92E9}</ProjectGuid>
         <ProjectVersion>18.8</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
-        <MainSource>prjTMPLT2.dpr</MainSource>
+        <MainSource>prjPPS.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -44,7 +44,7 @@
         <VerInfo_Locale>1046</VerInfo_Locale>
         <DCC_Define>IW;$(DCC_Define)</DCC_Define>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <SanitizedProjectName>prjTMPLT2</SanitizedProjectName>
+        <SanitizedProjectName>prjPPS</SanitizedProjectName>
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
@@ -105,11 +105,6 @@
             <FormType>dfm</FormType>
             <DesignClass>TIWAppForm</DesignClass>
         </DCCReference>
-        <DCCReference Include="Pages\uConsolida_tst.pas">
-            <Form>IWFRM_Consolida_tst</Form>
-            <FormType>dfm</FormType>
-            <DesignClass>TIWAppForm</DesignClass>
-        </DCCReference>
         <DCCReference Include="Pages\uIndex.pas">
             <Form>IWFRM_Index</Form>
             <FormType>dfm</FormType>
@@ -136,6 +131,25 @@
             <FormType>dfm</FormType>
             <DesignClass>TIWAppForm</DesignClass>
         </DCCReference>
+        <DCCReference Include="Pages\uPrevia.pas">
+            <Form>IWFRM_Previas</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TIWAppForm</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Pages\uTransmissao.pas">
+            <Form>IWFRM_Transmissao</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TIWAppForm</DesignClass>
+        </DCCReference>
+        <DCCReference Include="DM\uDM.pas">
+            <Form>DM</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
+        <DCCReference Include="DM\clsAuxiliar.pas"/>
+        <DCCReference Include="DM\clsLog.pas"/>
+        <DCCReference Include="DM\ConfigENV.pas"/>
+        <DCCReference Include="plugins\SweetAlerts.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -154,7 +168,7 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">prjTMPLT2.dpr</Source>
+                    <Source Name="MainSource">prjPPS.dpr</Source>
                 </Source>
                 <Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k260.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
@@ -162,9 +176,9 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="3">
-                <DeployFile LocalName="Production32\prjTMPLT2.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="Production32\prjPPS.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>prjTMPLT2.exe</RemoteName>
+                        <RemoteName>prjPPS.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

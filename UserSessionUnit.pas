@@ -9,8 +9,8 @@ interface
 
 uses
   IWUserSessionBase, SysUtils, Classes, IWAppForm,
-  uLogin, uIndex, uProcessa, uConsolida, uReport1,
-  clsAux
+  uLogin, uIndex, uProcessa, uConsolida, uReport1, uPrevia, uTransmissao,
+  clsAux, uDM
   ;
 
 type
@@ -20,18 +20,27 @@ type
     FIDUsuario: string;
     FUserName: string;
     FLastLogin: TDateTime;
-    aux: Auxiliar;
+    aux: Auxiliar2;
   public
-    FProcessa: TIWFRM_Processa;
+    DM : TDM;
+    programaPronto: boolean;
+    //FProcessa: TIWFRM_Processa;
     LOGGED: Boolean;
     LOGGED2: Boolean;
     ActivePage, friendlyPageName, frm_title: string;
+
+    GIDPROC: string;
+    GPPSID : string;
+    GPPSEMP: string;
+    GPPSPRD: string;
+    GPPSVIGINI: string;
+    GPPSVIGFIM: string;
 
     property UserName: string read FUserName write FUserName;
     property IDUsuario: string read FIDUsuario write FIDUsuario;
     property LastLogin: TDateTime read FLastLogin write FLastLogin;
 
-    procedure DoLogin(USR, PASS:string);
+    procedure DoLogin(USR, PASS, ENV:string);
     function getUserMenu(): String;
     function getStdMenu(): String;
     function addNavGroup(title, link, icon, span, vspan, open: string): String;
@@ -51,35 +60,42 @@ implementation
 procedure TIWUserSession.IWUserSessionBaseCreate(Sender: TObject);
 begin
 
+
+  DM := TDM.Create(Self);
+  programaPronto:= DM.PROG_ENV.programaPronto;
   LOGGED:= false;
 
 end;
 
-procedure TIWUserSession.DoLogin(USR, PASS:string);
+procedure TIWUserSession.DoLogin(USR, PASS, ENV:string);
 begin
 
 
-  //get username/id from DB
-  UserName:= USR;
-  IDUsuario:= 'SB037635';
+  LOGGED:= DM.LoginENV(USR, PASS, ENV);
 
-  LOGGED:= true;
 
-  //Get template on user preferences (create data on DB)
+  if LOGGED then begin
 
-  //Sample
-  if trim(UserName) = 'AND' then begin
-    //WebApplication.ShowMessage('IWMaster_black');
-    //IWServerController.MasterTemplate:='IWMaster_black.html';
+      UserName:= DM.UserName;
+      IDUsuario:= DM.IDUsuario;
+
   end;
 
 
-  if trim(UserName) <> 'AND' then begin
-    //WebApplication.ShowMessage('IWMaster');
-    //IWServerController.MasterTemplate:='IWMaster.html';
-  end;
 
-
+//  //Get template on user preferences (create data on DB)
+//
+//  //Sample
+//  if trim(UserName) = 'AND' then begin
+//    //WebApplication.ShowMessage('IWMaster_black');
+//    //IWServerController.MasterTemplate:='IWMaster_black.html';
+//  end;
+//
+//
+//  if trim(UserName) <> 'AND' then begin
+//    //WebApplication.ShowMessage('IWMaster');
+//    //IWServerController.MasterTemplate:='IWMaster.html';
+//  end;
 
 
 end;
@@ -169,6 +185,24 @@ begin
   end;
 
 
+
+
+
+
+
+
+
+//  Result:=
+//  '      <li class="nav-item">                                '+sLineBreak+
+//  '        <a href="'+link+'" class="nav-link '+active+'">    '+sLineBreak+
+//  '          <i class="nav-icon '+icon+'"></i>                '+sLineBreak+
+//  '          <p style="text-transform: capitalize">           '+sLineBreak+
+//  '            '+title+'</p>                                  '+sLineBreak+
+//  '        </a>                                               '+sLineBreak+
+//  '      </li>
+
+
+
   menu:=
   '<li class="nav-item '+openMain+'">                        '+sLineBreak+
   '    <a href="#" class="nav-link '+activeMain+'">          '+sLineBreak+
@@ -179,20 +213,23 @@ begin
   '      </p>                                                '+sLineBreak+
   '    </a>                                                  '+sLineBreak+
   '    <ul class="nav nav-treeview">                         '+sLineBreak+
-  '      <li class="nav-item">                               '+sLineBreak+
-  '        <a href="#" class="nav-link '+activeItem1+'">     '+sLineBreak+
-  '          <i class="far fa-circle nav-icon"></i>          '+sLineBreak+
-  '          <p style="text-transform: capitalize">          '+sLineBreak+
-  '             Dashboard 1 </p>                             '+sLineBreak+
-  '        </a>                                              '+sLineBreak+
-  '      </li>                                               '+sLineBreak+
-  '      <li class="nav-item">                               '+sLineBreak+
-  '        <a href="#" class="nav-link '+activeItem2+'">     '+sLineBreak+
-  '          <i class="far fa-circle nav-icon"></i>          '+sLineBreak+
-  '          <p style="text-transform: capitalize">          '+sLineBreak+
-  '             Dashboard 2 </p>                             '+sLineBreak+
-  '        </a>                                              '+sLineBreak+
-  '      </li>                                               '+sLineBreak+
+         addNavItem('Dashboard 1', IWFRM_Index.PAGE_ID, 'far fa-circle') +
+         addNavItem('Dashboard 2', '#', 'far fa-circle')                 +
+
+//  '      <li class="nav-item">                               '+sLineBreak+
+//  '        <a href="#" class="nav-link '+activeItem1+'">     '+sLineBreak+
+//  '          <i class="far fa-circle nav-icon"></i>          '+sLineBreak+
+//  '          <p style="text-transform: capitalize">          '+sLineBreak+
+//  '             Dashboard 1 </p>                             '+sLineBreak+
+//  '        </a>                                              '+sLineBreak+
+//  '      </li>                                               '+sLineBreak+
+//  '      <li class="nav-item">                               '+sLineBreak+
+//  '        <a href="#" class="nav-link '+activeItem2+'">     '+sLineBreak+
+//  '          <i class="far fa-circle nav-icon"></i>          '+sLineBreak+
+//  '          <p style="text-transform: capitalize">          '+sLineBreak+
+//  '             Dashboard 2 </p>                             '+sLineBreak+
+//  '        </a>                                              '+sLineBreak+
+//  '      </li>                                               '+sLineBreak+
   '    </ul>                                                 '+sLineBreak+
   '</li>                                                     '+sLineBreak+
   '<li class="nav-item">                                     '+sLineBreak+
@@ -220,7 +257,7 @@ begin
 
   menuStandard:= getStdMenu;
 
-  aux:= Auxiliar.Create();
+  aux:= Auxiliar2.Create();
   aux.saveTXT(menuStandard, 'menuStd.html');
 
 
@@ -231,17 +268,17 @@ begin
   //itens:= new ArrayLIst['', ''];
   itens:= TStringList.Create;
   itens.Add(IWFRM_Processa.PAGE_ID);
-  itens.Add(IWFRM_Consolida.PAGE_ID);
-  //itens.Add(IWFRM_Processa.PAGE_ID);
-  //itens.Add(IWFRM_Processa.PAGE_ID);
+  //itens.Add(IWFRM_Consolida.PAGE_ID);
+  itens.Add(IWFRM_Previas.PAGE_ID);
+  itens.Add(IWFRM_Transmissao.PAGE_ID);
   if itens.IndexOf(ActivePage) >= 0 then
     open:= 'menu-open';
   menuUser:=
-  addNavGroup('Tabela PPS', '#', 'icon', 'info', '4', open)                     +
-    addNavItem('Processar tabela PPS', IWFRM_Processa.PAGE_ID, 'far fa-circle') +
-    addNavItem('Consolidar', IWFRM_Consolida.PAGE_ID, 'far fa-circle')          +
-    addNavItem('Gerar Prévias (XML)', 'FRM_PREVI', 'far fa-circle')             +
-    addNavItem('Transmitir SEFAZ', 'FRM_SEFAZ', 'far fa-envelope')              +
+  addNavGroup('Tabela PPS', '#', 'icon', 'info', '4', open)                      +
+    addNavItem('Processar tabela PPS', IWFRM_Processa.PAGE_ID, 'far fa-circle')  +
+  //addNavItem('Consolidar', IWFRM_Consolida.PAGE_ID, 'far fa-circle')           +
+    addNavItem('Gerar Prévias (XML)', IWFRM_Previas.PAGE_ID, 'far fa-circle')    +
+    addNavItem('Transmitir SEFAZ', IWFRM_Transmissao.PAGE_ID, 'far fa-envelope') +
   closeGroup;
 
 
@@ -256,6 +293,24 @@ begin
   menuUser:= menuUser +
   addNavGroup('Relatórios', '#', 'icon', 'info', '1', open)                     +
     addNavItem('Report "1"', IWFRM_RPT1.PAGE_ID, 'far fa-circle') +
+  closeGroup;
+
+
+  ///////////////////////////////////////////////////////////////////////////////
+  //Grupo menu 3 - Cadastros ////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////
+  itens.Clear;
+  open:= '';
+  itens.Add('IWFRM_CADALIQ.PAGE_ID');
+  itens.Add('IWFRM_CADGRUPO.PAGE_ID');
+  itens.Add('IWFRM_CADENG.PAGE_ID');
+  if itens.IndexOf(ActivePage) >= 0 then
+    open:= 'menu-open';
+  menuUser:= menuUser +
+  addNavGroup('Cadastros', '#', 'icon', 'info', '1', open)            +
+    addNavItem('Alíquotas', 'IWFRM_CADALIQ.PAGE_ID', 'far fa-circle') +
+    addNavItem('Grupos', 'IWFRM_CADGRUPO.PAGE_ID', 'far fa-circle') +
+    addNavItem('Produto Eng. BR', 'IWFRM_CADENG.PAGE_ID', 'far fa-circle') +
   closeGroup;
 
 

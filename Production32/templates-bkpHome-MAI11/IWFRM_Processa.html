@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<!--html lang="en"-->
+<head>
+    <!--meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"-->
+    <title>{%form_title%}</title>
+    <link rel="stylesheet" href="../wwwroot/custom/css/cet.css">   
+
+</head>
+<body>
+        
+    <!--h3>{... Form uProcessa</h3><small>[From Delphi]</small><h3>...}</h3-->
+               
+   <br>
+   {%Step_ProgressBar%}
+
+
+   <div class="row">
+    <div class="col-12">       
+      <div class="card">
+        <div class="card-header"> <h3 class="card-title">Card header</h3> </div> 
+        <div class="card-body">
+       
+            Card content
+
+        </div> <!-- /.card-body -->
+      </div> <!-- /.card -->
+    </div> <!-- /.col -->
+  </div><!-- /.row -->
+
+   
+    <div id="main">    
+        <button id="previousBtn" > Voltar </button>
+        <button onclick="fncExecutar('FRM_CONSOLIDA', 0)" id="nextBtn"> Avançar </button>
+    </div>
+
+
+
+
+    {%Step_ProgressBar_SCRIPT%}
+   <script>                                                                           
+   /*
+   //const  content  =  document.getElementById('content';           
+    const  bullets  =  [...document.querySelectorAll('.bullet')];     
+    const  steps  =  [...document.querySelectorAll('.step-text')];    
+                                                                                     
+    const MAX_STEPS = 4;                                                             
+    let currentStep = 1;                                                             
+    steps[currentStep-1].classList.add('current');                    
+                                                                                     
+    //AVANÇA ETAPA                                                                   
+    //Completa atual / desmarca indicação de etapa atual                             
+    //bullets[currentStep - 1].classList.add('completed');            
+    //steps[currentStep-1].classList.remove('current');               
+    //Incrementa indice da etapa / marca como atual:                                 
+    //currentStep += 1;                                                              
+    //steps[currentStep-1].classList.add('current');                  
+    //Habilita  previousBtn                                                          
+      previousBtn.disabled  =  false;                                                
+      if (currentStep  ===  MAX_STEPS)  {                                            
+        nextBtn.disabled  =  true;                                                   
+        finishBtn.disabled  =  false;                                                
+      };                                                                                                                                                                                                                                                                  
+      if  (currentStep  ===  1)  {                                                   
+        previousBtn.disabled  =  true;                                               
+      };                                                                              
+  */  
+  </script>   
+
+
+   
+</body>
+</html>
+
+
+
+<!--div id="page-wrapper">
+   <h1> Form uProcessa [From Delphi] </h1>
+</div-->

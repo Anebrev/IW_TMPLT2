@@ -8,26 +8,35 @@ uses
   IWBaseLayoutComponent, IWBaseContainerLayout, IWContainerLayout,
   IWTemplateProcessorHTML, IWCompLabel, IWVCLBaseControl, IWBaseControl,
   IWBaseHTMLControl, IWControl, IWCompButton, IWCompText, IWCompEdit,
+  Data.Win.ADODB,
   clsAux
   ;
 
 type
   TIWFRM_Consolida = class(TIWBase)
   IWT_DATATABLE: TIWText;
-    IWE_Filter: TIWEdit;
-    IWL_Status: TIWLabel;
+  IWE_Filter: TIWEdit;
+  IWL_Status: TIWLabel;
   procedure prc_Acao(EventParams: TStringList); override;
   procedure IWAppFormCreate(Sender: TObject);
   procedure IWTemplateProcessorHTML1UnknownTag(const AName: string; var VValue: string);
 
   private
-    aux: Auxiliar;
+    aux: Auxiliar2;
+    html : string;
+    ttCols ,tagCol1 , tagCol2 : string;
+
     function getDataTable(filtro:string): string;
     function getDataTableJSON(): string;
     function getDataTableTH(th:string): string;
     function getDataTableBody1(): string;
     function getDataTableBody2(): string;
     function getDataTableBody3(): string;
+    function getStepProgress(typeTAG:string): string;
+
+    procedure ListarAliquitas;
+    //procedure Consultar;
+
   public
     const
       PAGE_ID = 'FRM_CONSOLIDA';
@@ -50,60 +59,159 @@ begin
   inherited;
   //
 
-  IWL_Status.Text:= '';
-  IWT_DATATABLE.RawText:= true;
+  //*****IWL_Status.Text:= '';
+  //****IWT_DATATABLE.RawText:= true;
   //IWT_DATATABLE.Text:= getDataTableJSON;
-  IWT_DATATABLE.Text:= getDataTable('');
+  //**********IWT_DATATABLE.Text:= getDataTable('');
 
   UserSession.ActivePage:= PAGE_ID;
   UserSession.frm_title:= FRM_TITLE;
   UserSession.friendlyPageName:= FRIENDLY_NAME;
 
+  ListarAliquitas;
+
 end;
 
+function TIWFRM_Consolida.getStepProgress(typeTAG:string): string;
+var
+  html: string;
+  moveStep: integer;
+begin
+
+  moveStep:= 1;
+
+  if typeTAG='body' then begin
+
+    html:=
+    '  <div class="container">                                                             '+sLineBreak+
+    '      <div id="stepProgressBar">                                                      '+sLineBreak+
+    '          <div class="step">                                                          '+sLineBreak+
+    '              <p class="step-text">Processamento</p> <div class="bullet">1</div>      '+sLineBreak+
+    '          </div>                                                                      '+sLineBreak+
+    '          <div class="step">                                                          '+sLineBreak+
+    '              <p class="step-text">Consolidação</p> <div class="bullet">2</div>       '+sLineBreak+
+    '          </div>                                                                      '+sLineBreak+
+    '          <div class="step">                                                          '+sLineBreak+
+    '              <p class="step-text">Prévias</p> <div class="bullet">3</div>            '+sLineBreak+
+    '          </div>                                                                      '+sLineBreak+
+    '          <div class="step">                                                          '+sLineBreak+
+    '              <p class="step-text">Transmissão SEFAZ</p> <div class="bullet ">4</div> '+sLineBreak+
+    '          </div>                                                                      '+sLineBreak+
+    '      </div>                                                                          '+sLineBreak+
+    '  </div>                                                                              '+sLineBreak
+    ;
+
+  end;
+
+
+  if typeTAG='script' then begin
+
+    html:=
+      '<script>                                                                           '+sLineBreak+
+      '//const  content  =  document.getElementById('+QuotedStr('content')+';             '+sLineBreak+
+      '  const  bullets  =  [...document.querySelectorAll('+QuotedStr('.bullet')+')];     '+sLineBreak+
+      '  const  steps  =  [...document.querySelectorAll('+QuotedStr('.step-text')+')];    '+sLineBreak+
+      '                                                                                   '+sLineBreak+
+      '  const MAX_STEPS = 4;                                                             '+sLineBreak+
+      '  let currentStep = 1;                                                             '+sLineBreak+
+      '  steps[currentStep-1].classList.add('+QuotedStr('current')+');                    '+sLineBreak+
+      '                                                                                   '+sLineBreak+
+      '  avanca('+moveStep.ToString+');                                                   '+sLineBreak+
+      '                                                                                   '+sLineBreak+
+      '  //Ativação de botões                                                             '+sLineBreak+
+      '  previousBtn.disabled  = true;                                                    '+sLineBreak+
+      '  nextBtn.disabled      = true;                                                    '+sLineBreak+
+      '  //finishBtn.disabled    = true;                                                  '+sLineBreak+
+      '                                                                                   '+sLineBreak+
+      '  if (currentStep > 1)  {                                                          '+sLineBreak+
+      '    previousBtn.disabled = false;                                                  '+sLineBreak+
+      '  };                                                                               '+sLineBreak+
+      '  if (currentStep < MAX_STEPS)  {                                                  '+sLineBreak+
+      '    nextBtn.disabled = false;                                                      '+sLineBreak+
+      '  };                                                                               '+sLineBreak+
+      '  //if (currentStep  ===  MAX_STEPS)  {                                            '+sLineBreak+
+      '  //  finishBtn.disabled = false;                                                  '+sLineBreak+
+      '  //};                                                                             '+sLineBreak+
+      '  //content.innerText = `Step Number ${currentStep}`;                              '+sLineBreak+
+      '                                                                                   '+sLineBreak+
+      '  function avanca(qtAvanco){                                                       '+sLineBreak+
+      '    debugger;                                                                      '+sLineBreak+
+      '    for(var i=1 ; i<=qtAvanco ; i++){                                              '+sLineBreak+
+      '       //AVANÇA ETAPA                                                              '+sLineBreak+
+      '       //Completa atual / desmarca indicação de etapa atual                        '+sLineBreak+
+      '       bullets[currentStep - 1].classList.add('+QuotedStr('completed')+');         '+sLineBreak+
+      '       steps[currentStep - 1].classList.remove('+QuotedStr('current')+');          '+sLineBreak+
+      '       //Incrementa indice da etapa / marca como atual:                            '+sLineBreak+
+      '       currentStep += 1;                                                           '+sLineBreak+
+      '       steps[currentStep-1].classList.add('+QuotedStr('current')+');               '+sLineBreak+
+      '       bullets[currentStep - 1].classList.add('+QuotedStr('current')+');           '+sLineBreak+
+      '    }                                                                              '+sLineBreak+
+      '    //document.write(count+"<br />");                                              '+sLineBreak+
+      '  };                                                                               '+sLineBreak+
+      '                                                                                   '+sLineBreak+
+      '</script>                                                                          '+sLineBreak;
+
+
+  end;
+
+  Result:= html;
+
+end;
 
 procedure TIWFRM_Consolida.IWTemplateProcessorHTML1UnknownTag(const AName: string; var VValue: string);
 begin
   inherited;
 
-   if AName ='IWT_DATATABLE' then
-   begin
-      VValue:= '<h1> teste </h1>';
-   end;
+
+
+//  if AName = 'Step_ProgressBar' then          //{%Step_ProgressBar%}
+//    VValue := getStepProgress('body');
+//
+//  if AName = 'Step_ProgressBar_SCRIPT' then   //{%Step_ProgressBar_SCRIPT%}
+//    VValue := getStepProgress('script');
+//
+//
+//
+//   if AName ='IWT_DATATABLE' then
+//   begin
+//      VValue:= '<h1> teste </h1>';
+//   end;
 
 
 end;
+
 
 procedure TIWFRM_Consolida.prc_Acao(EventParams: TStringList);
 var
   filtro: string;
 begin
 
-   inherited;
+  inherited;
 
 
-   filtro:= IWE_Filter.Text;
-
-    if Acao = 'ProcDataTable' then begin
-
-
-
-      //gera novo json base filtros da consulta
-
-
-      //IWT_DATATABLE.RawText:= true;
-      IWL_Status.Text:= 'Loading DataTable...';
-      //IWT_DATATABLE.Text:= 'Loading---...'; //create function to load some secs
-      //sleep(5000);
-      //WebApplication.ShowMessage('Limpando html datatable...');
-      IWT_DATATABLE.Text:= getDataTable(filtro);
-      //IWT_DATATABLE.Text:= getDataTableJSON;
-      IWL_Status.Text:= '';
-
-
-
-
-    end;
+//  filtro:= IWE_Filter.Text;
+//
+//  if Acao = 'ProcDataTable' then begin
+//
+//
+//    //IWT_DATATABLE.RawText:= true;
+//    IWL_Status.Text:= 'Loading DataTable...';
+//    //IWT_DATATABLE.Text:= 'Loading---...'; //create function to load some secs
+//    //sleep(5000);
+//    //WebApplication.ShowMessage('Limpando html datatable...');
+//    IWT_DATATABLE.Text:= getDataTable(filtro);
+//    //IWT_DATATABLE.Text:= getDataTableJSON;
+//    IWL_Status.Text:= '';
+//
+//
+//
+//
+//  end;
+//
+//  if Acao = 'ProcDataTable_Json' then begin
+//    //gera novo json base filtros da consulta
+//    IWT_DATATABLE.Text:= getDataTableJSON();
+//  end;
 
 
 end;
@@ -721,7 +829,6 @@ begin
 
 end;
 
-
 function TIWFRM_Consolida.getDataTableBody3(): string;
 begin
 
@@ -776,7 +883,6 @@ begin
 
 end;
 
-
 function TIWFRM_Consolida.getDataTable(filtro:string): string;
 var
   html:string;
@@ -798,6 +904,10 @@ begin
     html:= html + getDataTableBody1();
 
 
+  if (filtro='body3') then
+    html:= html + getDataTableBody3();
+
+
   html:= html +
   '      </tbody>                                                                        '+sLineBreak+
   '      <tfoot>                                                                         '+sLineBreak+
@@ -806,7 +916,7 @@ begin
   '</div>                                                                                '+sLineBreak
   ;
 
-  aux:= Auxiliar.Create();
+  aux:= Auxiliar2.Create();
   aux.saveTXT(html, 'dataTable_TAG.html');
 
   Result:= html;
@@ -837,8 +947,135 @@ end;
 
 
 
+procedure TIWFRM_Consolida.ListarAliquitas;
+var
+  i: Integer;
+  colspan, aliq: string;
+  tagCol3, tabela: string;
+  lQue, lQue2, lQue3: TADOQuery;
+  campo: string;
+  tabtd: string;
+  IDP_CDE_CDP: string; //IDProcesso + Cod.Empresa + Cod.Produto
+begin
+
+
+
+
+  { Obtendo o total de colunas... }
+  ttCols :=  UserSession.DM.GetTotalColunas2.ToString;
+  { Obtendo lista de colunas por aliquota... }
+  lQue   := UserSession.DM.ListTotColunasPorAliquota;
+  { Obtendo lista de registros... }
+  lQue2  := UserSession.DM.ListColunasPorAliquota;
+
+
+//     { Montando colunas por aliquota...  }
+//     tagCol1:='';
+//     colspan:='';
+//     lQue.First;
+//     while not lQue.Eof do
+//     begin
+//        colspan := lQue.FieldByName('TOTAL').AsString;
+//        aliq    := lQue.FieldByName('PPSICM').AsString;
+//        tagCol1 := tagCol1 + '<th colspan="'+colspan+'" style="text-align: center;">'+
+//        aliq.Replace(',','.')+'<span class="numberCircle clrRose"><span>8</span></span> </th> '+SLineBreak;
+//        lQue.Next;
+//     end;
+//     lQue.Close;
+//
+//     tagCol1 := tagCol1 + '<th rowspan="2" colspan="1" style="text-align: center;">A��es</th> '+SLineBreak;
+//
+//     tagCol2:='';
+//     lQue2.First;
+//     while not lQue2.Eof do
+//     begin
+//       aliq := lQue2.FieldByName('VALOR').AsString;
+//       tagCol2 := tagCol2 + ' <th style="text-align: center;">'+aliq+'</th> '+SLineBreak;
+//       lQue2.Next;
+//     end;
+//
+//     { Listando os registros... }
+//     lQue3 := Controller.DM.ListarAliquotas(Controller.GIDPROC);
+//     tabtd:='';
+//     tabela:='';
+//     lQue3.First;
+//     while NOT lQue3.Eof do
+//     begin
+//       { montando chave para o bot�o historico... }
+//       IDP_CDE_CDP := trim(lQue3.FieldByName('PPSID').AsString)+
+//                           lQue3.FieldByName('PPSEMP').AsString+
+//                      trim(lQue3.FieldByName('PPSPRD').AsString)+
+//                      lQue3.FieldByName('PPSVIGINI').AsString +
+//                      lQue3.FieldByName('PPSVIGFIM').AsString;  // Result : '1HDJFT2021032220211231'
+//
+//       tabela := tabela + ' <tr> '+SLineBreak;
+//
+//       { adicionando os campos de valores }
+//       for i := 2 to lQue3.Fields.Count -1 do
+//       begin
+//         case i  of
+//             2 : campo:= lQue3.Fields[i].AsString.Trim;
+//           3,4 : campo:= Concat(Copy(lQue3.Fields[i].AsString,7,2),'/',Copy(lQue3.Fields[i].AsString,5,2),'/',Copy(lQue3.Fields[i].AsString,1,4)); //YYYYMMDD -> DD/MM/YYYY
+//           else
+//                 campo:=  FloatToStrF(lQue3.Fields[i].AsFloat, ffNumber, 15, 0);
+//         end;
+//         // tabtd:= tabtd + ' <td> '+campo+' </td> '+ SLineBreak;
+//         tabtd:= tabtd + ' <td class='+'"valor'+campo.Replace('.','')+'"> '+campo+' </td> '+ SLineBreak;
+//       end;
+//
+//        //"<td class='fundo". $res['campo que retorna 0 ou 1'] ."'>".$res['protocolo']."</td>";
+//
+//       { adicionando o bot�o historico...
+//       '     <button type="buttom" class="btn btn-xs btn-warning" data-toggle="tooltip" data-placement="top" title="Historico" onclick="SetaAcao(''Hist'', '''+IDP_CDE_CDP+''');"> '+SLineBreak+
+//
+//       }
+//       tabtd := tabtd + SLineBreak +
+//        ' <td align="center"> ' + SLineBreak +
+//        '     <button type="buttom" class="btn btn-xs btn-warning" data-toggle="tooltip" data-placement="top" title="Historico" onclick="javascript:fncExecutar(''Hist'', '''+IDP_CDE_CDP+''');"> '+SLineBreak+
+//        '           <i class="fa fa-folder-open-o"></i> '+SLineBreak+
+//        '     </button> '+SLineBreak+
+//        ' </td> '+SLineBreak;
+//
+//       tabela:=tabela + tabtd + ' </tr> '+SLineBreak;
+//       tabtd:='';
+//
+//       lQue3.Next;
+//     end;
+//
+//     { guardando resultado da sql...}
+//     IWSQL.Text := lQue3.SQL.Text;
+//
+//    html := '';
+//    html :=  '<table id="GRID" class="table table-bordered table-striped table-hover"> '+SLineBreak+
+//             '    <thead> '+SLineBreak+
+//             '        <tr> '+SLineBreak+
+//             '            <th colspan="3" rowspan="2" style="text-align: center;">PRODUTO</th> '+SLineBreak+
+//             '            <th colspan="'+ttCols+'" style="text-align: center;">PRE�OS POR AL�QUOTA</th> '+SLineBreak+
+//             '        </tr> '+SLineBreak+
+//             '        <tr> '+SLineBreak +
+//                                tagCol1 +
+//             '        </tr> '+SLineBreak+
+//             '        <tr> '+SLineBreak+
+//             '            <th>C�DIGO</th> '+SLineBreak+
+//             '            <th>DT. INICIO</th> '+SLineBreak+
+//             '            <th>DT. FIM</th> '+SLineBreak+
+//                                 tagCol2+
+//             '        </tr> '+SLineBreak+
+//             '    </thead> '+SLineBreak+
+//             '    <tbody> '+SLineBreak+
+//                              tabela +
+//             '    </tbody> '+SLineBreak+
+//             ' </table> '+SLineBreak;
+//
+//    GRID1.Text := html;
+
+
+
+ end;
+
 
 
 
 end.
+
 

@@ -9,7 +9,7 @@ interface
 
 type
   TResultArray = array of string;
-  Auxiliar = Class
+  Auxiliar2 = Class
 
 public
   procedure saveTXT(text, title: string);
@@ -20,7 +20,7 @@ End;
 implementation
 
 
-procedure Auxiliar.saveTXT(text, title: string);
+procedure Auxiliar2.saveTXT(text, title: string);
 var
   Arquivo: TStringList;
 begin

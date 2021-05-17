@@ -1,7 +1,7 @@
 object IWServerController: TIWServerController
   OldCreateOrder = False
   AppName = 'TMPLT1'
-  CacheDir = 'C:\Users\BINGO\AppData\Local\Temp'
+  CacheDir = 'C:\Users\bingo\AppData\Local\Temp'
   Compression.Level = 6
   Description = 'Template 1'
   DisplayName = 'TMPLT1'

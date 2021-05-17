@@ -7,7 +7,7 @@ uses
   IWBaseLayoutComponent, IWBaseContainerLayout, IWContainerLayout,
   IWTemplateProcessorHTML, IWCompButton, Vcl.Controls, IWVCLBaseControl,
   IWBaseControl, IWBaseHTMLControl, IWControl, IWCompEdit, IWHTMLControls, IWHTMLTag,
-  IWCompLabel
+  IWCompLabel //SweetAlerts
   //UserSessionUnit
   //ServerController
   ;
@@ -40,7 +40,7 @@ implementation
 {$R *.dfm}
 uses
   ServerController, uLogin, uIndex,
-  uProcessa, uConsolida, uReport1;
+  uProcessa, uConsolida, uPrevia, uTransmissao, uReport1;
 
 
 procedure TIWBase.IWAppFormCreate(Sender: TObject);
@@ -71,8 +71,6 @@ var
 begin
 
   sl:= TStringList.Create;
-  //CountParam:= 0;
-
 
   try
 
@@ -98,14 +96,8 @@ begin
 
     if Acao = 'Logout' then begin
 
-      //WebApplication.ShowMessage('Redirecting to Page Login...');
       TIWFRM_Login(WebApplication.ActiveForm).Release;
       TIWFRM_Login.Create(WebApplication).Show;
-
-      //OLD:
-      //self.Release;
-      //IWFRM_Login:= TIWFRM_Login.create(Self);
-      //IWFRM_Login.Show;
 
     end;
 
@@ -117,21 +109,58 @@ begin
     end;
 
 
-    if Acao = 'FRM_PROCESSA' then begin
+
+    //Form Index
+    if ( (Acao = IWFRM_Index.PAGE_ID) and (UserSession.ActivePage <> Acao) ) then begin
+
+      TIWAppForm(WebApplication.ActiveForm).Release;
+      TIWFRM_Index.Create(WebApplication).Show;
+
+    end;
+
+
+    //Form Processa
+    if ( (Acao = IWFRM_Processa.PAGE_ID) and (UserSession.ActivePage <> Acao) ) then begin
 
       TIWAppForm(WebApplication.ActiveForm).Release;
       TIWFRM_Processa.Create(WebApplication).Show;
 
     end;
 
-    if Acao = 'FRM_CONSOLIDA' then begin
+    //Form Consolida **Movido p/ avançar em FRM_PROCESSA
+    //if ( (Acao = IWFRM_Consolida.PAGE_ID) and (UserSession.ActivePage <> Acao) ) then begin
+    //
+    //  if UserSession.GIDPROC='' then
+    //    //AddToInitProc(swalError('ATENÇÃO','Selecione um processo para avançar para a próxima etapa.'))
+    //    WebApplication.ShowMessage('Selecione um processo para avançar para a próxima etapa')
+    //  else begin
+    //    TIWAppForm(WebApplication.ActiveForm).Release;
+    //    TIWFRM_Consolida.Create(WebApplication).Show;
+    //  end;
+    //
+    //end;
+
+    //Form Prévias
+    if ( (Acao = IWFRM_Previas.PAGE_ID) and (UserSession.ActivePage <> Acao) ) then begin
 
       TIWAppForm(WebApplication.ActiveForm).Release;
-      TIWFRM_Consolida.Create(WebApplication).Show;
+      TIWFRM_Previas.Create(WebApplication).Show;
 
     end;
 
-    if Acao =  IWFRM_RPT1.PAGE_ID then begin
+
+    //Form Transmissão
+    if ( (Acao = IWFRM_Transmissao.PAGE_ID) and (UserSession.ActivePage <> Acao) ) then begin
+
+      TIWAppForm(WebApplication.ActiveForm).Release;
+      TIWFRM_Transmissao.Create(WebApplication).Show;
+
+    end;
+
+
+
+    //Report 1
+    if ( (Acao = IWFRM_RPT1.PAGE_ID) and (UserSession.ActivePage <> Acao) ) then begin
 
       TIWAppForm(WebApplication.ActiveForm).Release;
       TIWFRM_RPT1.Create(WebApplication).Show;
@@ -144,7 +173,7 @@ begin
 
     if Acao = 'H1' then begin
 
-      IWLabel1.Text:= '<h1> Conte�do H1 </h1>';
+      IWLabel1.Text:= '<h1> ConteUdo H1 </h1>';
 
     end;
 
@@ -211,117 +240,11 @@ begin
   end;
 
 
-    //if AName = 'PagePath' then
-  //  VValue := 'Home | Processa'; //get PageName from usersession.PageName
-
-
-
-
-
-
-
 end;
 
 
-
-
-
-
-
-
-
-
-
-
-
-//procedure TIWBase.IWBTN_PGPROCESSAAsyncClick(Sender: TObject; EventParams: TStringList);
-//begin
-//
-//  WebApplication.ShowMessage('[uBase] ASYNK - Direcionando para Page PROCESSA!!');
-//
-//
-//  //Load method 1 -- create form on usersession and load when called
-//  //TIWAppForm(WebApplication.ActiveForm).Hide;
-//  //UserSession.FProcessa.Show;
-//
-//
-//  //Load method 2 - create/Load from uBase
-//  //TIWAppForm(WebApplication.ActiveForm).Release;
-//  //TIWFRM_Processa.Create(WebApplication).Show;
-//
-//
-//  //Load method 3 -- function call from UserSession
-//  //Load from UserSession
-//  //UserSession.AcaoMenu('processa');
-//
-//
-//  //Load method 4 - Components
-//  htmlPROCESSA:= '<h3>PAGE PROCESSA</h3>';
-//
-//
-//
-//  //teste:
-//  html:= '....';
-//  //TIWFormBase.Create(WebApplication).Show;
-//  //WebApplication.ActiveForm.Destroy;
-//  //IWFRM_Processa.Show;
-//  //Release;
-//
-//
-//end;
-
-
-//procedure TIWBase.IWBTN_PGCONSOLIDAAsyncClick(Sender: TObject; EventParams: TStringList);
-//begin
-//
-//  WebApplication.ShowMessage('ASYNK - Direcionando para Page CONSOLIDA!!');
-//
-//  //Method 1
-//  //TIWAppForm(WebApplication.ActiveForm).Hide;
-//  //IWFRM_Consolida.Show;
-//
-//  htmlCONSOLIDA:= '<h3>PAGE CONSOLIDA</h3>';
-//
-//end;
-
-
-//procedure TIWBase.IWBTN_PGXMLAsyncClick(Sender: TObject;  EventParams: TStringList);
-//begin
-//
-//  WebApplication.ShowMessage('ASYNK - Direcionando para Page GERA XML!!');
-//
-//end;
-
-
-
-
-
-
-
-
-
-
-
-
-
-//procedure TIWBase.IWTemplateProcessorHTML1UnknownTag(const AName: string; var VValue: string);
-//begin
-//
-//  html := '<div> <h1>injecting html </h1></div>'+SLineBreak;
-//  VValue := html;
-//  html := '';
-//
-//end;
-
 //initialization
   //TIWBase.SetAsMainForm;
-
-
-
-
-
-
-
 
 
 end.
