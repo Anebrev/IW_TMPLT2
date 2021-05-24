@@ -21,7 +21,9 @@ uses
   clsAuxiliar in 'DM\clsAuxiliar.pas',
   clsLog in 'DM\clsLog.pas',
   ConfigENV in 'DM\ConfigENV.pas',
-  SweetAlerts in 'plugins\SweetAlerts.pas';
+  SweetAlerts in 'plugins\SweetAlerts.pas',
+  uTag_TD in 'DM\uTag_TD.pas',
+  uTag_TR in 'DM\uTag_TR.pas';
 
 {$R *.res}
 

@@ -36,6 +36,14 @@
   height: 150px;  
 }
 
+#rcornersL {
+  border-radius: 17px;
+  border: 1px solid #bfc0baec;
+  padding: 10px; 
+  width: 300px;
+  height: 135px; 
+  margin: 0 auto;
+}
 
 
 #rcorners2-orig {

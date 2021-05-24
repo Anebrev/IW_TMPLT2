@@ -9,7 +9,7 @@ uses
   IWTemplateProcessorHTML, IWCompLabel, IWVCLBaseControl, IWBaseControl,
   IWBaseHTMLControl, IWControl, IWCompButton, IWCompText, IWCompEdit,
   Data.Win.ADODB,
-  clsAux
+  clsAux, uTag_TR, uTag_TD
   ;
 
 type
@@ -17,9 +17,12 @@ type
   IWT_DATATABLE: TIWText;
   IWE_Filter: TIWEdit;
   IWL_Status: TIWLabel;
+  IWSQL: TIWLabel;
+  IWT_MODAL_HIST: TIWText;
   procedure prc_Acao(EventParams: TStringList); override;
   procedure IWAppFormCreate(Sender: TObject);
   procedure IWTemplateProcessorHTML1UnknownTag(const AName: string; var VValue: string);
+  procedure IWAppFormShow(Sender: TObject);
 
   private
     aux: Auxiliar2;
@@ -34,8 +37,12 @@ type
     function getDataTableBody3(): string;
     function getStepProgress(typeTAG:string): string;
 
-    procedure ListarAliquitas;
+    procedure ListarAliquotas;
     //procedure Consultar;
+    function addTagAliq(qtAlt:integer): string;
+    procedure drawModalHist(ID_PRODUTO:string);
+    function getGridHist: string;
+    function drawChekAlterados: string;
 
   public
     const
@@ -59,16 +66,27 @@ begin
   inherited;
   //
 
-  //*****IWL_Status.Text:= '';
-  //****IWT_DATATABLE.RawText:= true;
+  //***IWL_Status.Text:= '';
+  //***IWT_DATATABLE.RawText:= true;
   //IWT_DATATABLE.Text:= getDataTableJSON;
-  //**********IWT_DATATABLE.Text:= getDataTable('');
+  //IWT_DATATABLE.Text:= getDataTable('');
 
   UserSession.ActivePage:= PAGE_ID;
   UserSession.frm_title:= FRM_TITLE;
   UserSession.friendlyPageName:= FRIENDLY_NAME;
 
-  ListarAliquitas;
+  //IWT_DATATABLE.Text:= '';
+  //IWT_MODAL_HIST.Text:= '';
+
+  //ListarAliquotas;
+
+end;
+
+procedure TIWFRM_Consolida.IWAppFormShow(Sender: TObject);
+begin
+
+  IWT_MODAL_HIST.Text:= ' ';
+  ListarAliquotas;
 
 end;
 
@@ -164,18 +182,28 @@ begin
 
 
 
-//  if AName = 'Step_ProgressBar' then          //{%Step_ProgressBar%}
-//    VValue := getStepProgress('body');
-//
-//  if AName = 'Step_ProgressBar_SCRIPT' then   //{%Step_ProgressBar_SCRIPT%}
-//    VValue := getStepProgress('script');
-//
-//
-//
-//   if AName ='IWT_DATATABLE' then
-//   begin
-//      VValue:= '<h1> teste </h1>';
-//   end;
+  if AName = 'Step_ProgressBar' then          //{%Step_ProgressBar%}
+    VValue := getStepProgress('body');
+
+  if AName = 'Step_ProgressBar_SCRIPT' then   //{%Step_ProgressBar_SCRIPT%}
+    VValue := getStepProgress('script');
+
+
+
+  if AName = 'IW_CHKALTERADOS' then begin  //{%IW_CHKALTERADOS%}
+
+    VValue:= drawChekAlterados;
+
+  end;
+
+
+
+
+
+   if AName ='IWT_DATATABLE' then
+   begin
+      VValue:= '<h1> teste </h1>';
+   end;
 
 
 end;
@@ -189,29 +217,45 @@ begin
   inherited;
 
 
-//  filtro:= IWE_Filter.Text;
-//
-//  if Acao = 'ProcDataTable' then begin
-//
-//
-//    //IWT_DATATABLE.RawText:= true;
-//    IWL_Status.Text:= 'Loading DataTable...';
-//    //IWT_DATATABLE.Text:= 'Loading---...'; //create function to load some secs
-//    //sleep(5000);
-//    //WebApplication.ShowMessage('Limpando html datatable...');
-//    IWT_DATATABLE.Text:= getDataTable(filtro);
-//    //IWT_DATATABLE.Text:= getDataTableJSON;
-//    IWL_Status.Text:= '';
-//
-//
-//
-//
-//  end;
-//
-//  if Acao = 'ProcDataTable_Json' then begin
-//    //gera novo json base filtros da consulta
-//    IWT_DATATABLE.Text:= getDataTableJSON();
-//  end;
+
+  if Acao = 'Hist' then begin
+    drawModalHist(IdAcao);
+  end;
+
+
+
+  if Acao = 'filtraConsolidacao' then begin
+
+    UserSession.DM.filtroConsolidacao:=  IdAcao;
+    ListarAliquotas;
+
+  end;
+
+
+
+
+
+
+
+  filtro:= IWE_Filter.Text;
+
+  if Acao = 'ProcDataTable' then begin
+
+    //IWT_DATATABLE.RawText:= true;
+    IWL_Status.Text:= 'Loading DataTable...';
+    //IWT_DATATABLE.Text:= 'Loading---...'; //create function to load some secs
+    //sleep(5000);
+    //WebApplication.ShowMessage('Limpando html datatable...');
+    IWT_DATATABLE.Text:= getDataTable(filtro);
+    //IWT_DATATABLE.Text:= getDataTableJSON;
+    IWL_Status.Text:= '';
+
+  end;
+
+  if Acao = 'ProcDataTable_Json' then begin
+    //gera novo json base filtros da consulta
+    IWT_DATATABLE.Text:= getDataTableJSON();
+  end;
 
 
 end;
@@ -947,133 +991,538 @@ end;
 
 
 
-procedure TIWFRM_Consolida.ListarAliquitas;
+
+
+function TIWFRM_Consolida.addTagAliq(qtAlt:integer): string;
 var
-  i: Integer;
-  colspan, aliq: string;
-  tagCol3, tabela: string;
+  span: string;
+begin
+
+  if qtAlt >=50 then begin
+     span:= '<span class="numberCircle clrRed"><span>' + qtAlt.ToString +'</span></span>';
+  end;
+
+  if qtAlt <50 then begin
+     span:= '<span class="numberCircle clrOrange"><span>' + qtAlt.ToString +'</span></span>';
+  end;
+
+  if qtAlt <10 then begin
+     span:= '<span class="numberCircle clrBlueciel"><span>' + qtAlt.ToString +'</span></span>';
+  end;
+
+
+  Result:= span;
+
+end;
+
+procedure TIWFRM_Consolida.ListarAliquotas;
+var
+  //i, linTemAlt: Integer;
+  colspan, aliq, tipo: string;
+  tabela: string; //tagCol3
   lQue, lQue2, lQue3: TADOQuery;
   campo: string;
   tabtd: string;
   IDP_CDE_CDP: string; //IDProcesso + Cod.Empresa + Cod.Produto
+  qtAlteracao: string;
+
+  colorClass:string;
+  tHeadClass:string;
+
+  KEY_LINE, KEY_LINE_OLD: string;
+  ALIQ_Line, TP_Line, ID_COL, VALOR: string;
+  QT_COL: integer;
+
+  TR_Dinamica: TTag_TR;
+  TD: TTag_TD;
 begin
 
 
-
+  tHeadClass:= 'thBlue';
 
   { Obtendo o total de colunas... }
-  ttCols :=  UserSession.DM.GetTotalColunas2.ToString;
+  ttCols := UserSession.DM.GetTotalColunas2.ToString;
   { Obtendo lista de colunas por aliquota... }
   lQue   := UserSession.DM.ListTotColunasPorAliquota;
   { Obtendo lista de registros... }
   lQue2  := UserSession.DM.ListColunasPorAliquota;
 
 
-//     { Montando colunas por aliquota...  }
-//     tagCol1:='';
-//     colspan:='';
-//     lQue.First;
-//     while not lQue.Eof do
-//     begin
-//        colspan := lQue.FieldByName('TOTAL').AsString;
-//        aliq    := lQue.FieldByName('PPSICM').AsString;
-//        tagCol1 := tagCol1 + '<th colspan="'+colspan+'" style="text-align: center;">'+
-//        aliq.Replace(',','.')+'<span class="numberCircle clrRose"><span>8</span></span> </th> '+SLineBreak;
-//        lQue.Next;
-//     end;
-//     lQue.Close;
-//
-//     tagCol1 := tagCol1 + '<th rowspan="2" colspan="1" style="text-align: center;">A��es</th> '+SLineBreak;
-//
-//     tagCol2:='';
-//     lQue2.First;
-//     while not lQue2.Eof do
-//     begin
-//       aliq := lQue2.FieldByName('VALOR').AsString;
-//       tagCol2 := tagCol2 + ' <th style="text-align: center;">'+aliq+'</th> '+SLineBreak;
-//       lQue2.Next;
-//     end;
-//
-//     { Listando os registros... }
-//     lQue3 := Controller.DM.ListarAliquotas(Controller.GIDPROC);
-//     tabtd:='';
-//     tabela:='';
-//     lQue3.First;
-//     while NOT lQue3.Eof do
-//     begin
-//       { montando chave para o bot�o historico... }
-//       IDP_CDE_CDP := trim(lQue3.FieldByName('PPSID').AsString)+
-//                           lQue3.FieldByName('PPSEMP').AsString+
-//                      trim(lQue3.FieldByName('PPSPRD').AsString)+
-//                      lQue3.FieldByName('PPSVIGINI').AsString +
-//                      lQue3.FieldByName('PPSVIGFIM').AsString;  // Result : '1HDJFT2021032220211231'
-//
-//       tabela := tabela + ' <tr> '+SLineBreak;
-//
-//       { adicionando os campos de valores }
-//       for i := 2 to lQue3.Fields.Count -1 do
-//       begin
-//         case i  of
-//             2 : campo:= lQue3.Fields[i].AsString.Trim;
-//           3,4 : campo:= Concat(Copy(lQue3.Fields[i].AsString,7,2),'/',Copy(lQue3.Fields[i].AsString,5,2),'/',Copy(lQue3.Fields[i].AsString,1,4)); //YYYYMMDD -> DD/MM/YYYY
-//           else
-//                 campo:=  FloatToStrF(lQue3.Fields[i].AsFloat, ffNumber, 15, 0);
-//         end;
-//         // tabtd:= tabtd + ' <td> '+campo+' </td> '+ SLineBreak;
-//         tabtd:= tabtd + ' <td class='+'"valor'+campo.Replace('.','')+'"> '+campo+' </td> '+ SLineBreak;
-//       end;
-//
-//        //"<td class='fundo". $res['campo que retorna 0 ou 1'] ."'>".$res['protocolo']."</td>";
-//
-//       { adicionando o bot�o historico...
-//       '     <button type="buttom" class="btn btn-xs btn-warning" data-toggle="tooltip" data-placement="top" title="Historico" onclick="SetaAcao(''Hist'', '''+IDP_CDE_CDP+''');"> '+SLineBreak+
-//
-//       }
-//       tabtd := tabtd + SLineBreak +
-//        ' <td align="center"> ' + SLineBreak +
-//        '     <button type="buttom" class="btn btn-xs btn-warning" data-toggle="tooltip" data-placement="top" title="Historico" onclick="javascript:fncExecutar(''Hist'', '''+IDP_CDE_CDP+''');"> '+SLineBreak+
-//        '           <i class="fa fa-folder-open-o"></i> '+SLineBreak+
-//        '     </button> '+SLineBreak+
-//        ' </td> '+SLineBreak;
-//
-//       tabela:=tabela + tabtd + ' </tr> '+SLineBreak;
-//       tabtd:='';
-//
-//       lQue3.Next;
-//     end;
-//
-//     { guardando resultado da sql...}
-//     IWSQL.Text := lQue3.SQL.Text;
-//
-//    html := '';
-//    html :=  '<table id="GRID" class="table table-bordered table-striped table-hover"> '+SLineBreak+
-//             '    <thead> '+SLineBreak+
-//             '        <tr> '+SLineBreak+
-//             '            <th colspan="3" rowspan="2" style="text-align: center;">PRODUTO</th> '+SLineBreak+
-//             '            <th colspan="'+ttCols+'" style="text-align: center;">PRE�OS POR AL�QUOTA</th> '+SLineBreak+
-//             '        </tr> '+SLineBreak+
-//             '        <tr> '+SLineBreak +
-//                                tagCol1 +
-//             '        </tr> '+SLineBreak+
-//             '        <tr> '+SLineBreak+
-//             '            <th>C�DIGO</th> '+SLineBreak+
-//             '            <th>DT. INICIO</th> '+SLineBreak+
-//             '            <th>DT. FIM</th> '+SLineBreak+
-//                                 tagCol2+
-//             '        </tr> '+SLineBreak+
-//             '    </thead> '+SLineBreak+
-//             '    <tbody> '+SLineBreak+
-//                              tabela +
-//             '    </tbody> '+SLineBreak+
-//             ' </table> '+SLineBreak;
+  { Montando colunas por aliquota...  }
+  tagCol1:='';
+  colspan:='';
+  lQue.First;
+  while not lQue.Eof do
+  begin
+    colspan := lQue.FieldByName('TOTAL').AsString;
+    aliq    := lQue.FieldByName('PPSICM').AsString;
+    qtAlteracao:= lQue.FieldByName('QTALT').AsString; //UserSession.DM.qtAltAliq(StrToFloat(aliq)).ToString;
+    tagCol1 := tagCol1 +
+    '       <th colspan="'+colspan+'" id="fitPadLL">'+
+            aliq.Replace(',','.')+addTagAliq(StrToInt(qtAlteracao))+' </th> '+SLineBreak;
+    lQue.Next;
+
+
+
+  end;
+  lQue.Close;
+
+  tagCol1 := tagCol1 + '       <th rowspan="2" colspan="1" id="fitPad">Ações</th> '+SLineBreak;
+
+
+  { Montando colunas por tipo...  }
+  TR_Dinamica:= TTag_TR.Create; // TR dos campos dinamicos
+  TR_Dinamica.ListaTD.Clear;
+  tagCol2:='';
+  lQue2.First;
+  while not lQue2.Eof do
+  begin
+    aliq := lQue2.FieldByName('CAMPO').AsString;
+    tipo := lQue2.FieldByName('VALOR').AsString;
+    tagCol2 := tagCol2 + '       <th style="text-align: center;">'+tipo+'</th> '+SLineBreak;
+
+    //tagCol2 := tagCol2 + '       <th style="text-align: center;">'+aliq+'</th> '+SLineBreak;
+    //aliq := lQue2.FieldByName('VALOR').AsString;
+    //tagCol2 := tagCol2 + '       <th style="text-align: center;">'+aliq+'</th> '+SLineBreak;
+    lQue2.Next;
+
+    ID_COL:= concat('a', aliq, tipo);
+    TR_Dinamica.AddTadTD(ID_COL, '', '-null-');
+
+  end;
+
+
+
+
+
+  { Listando os registros... }
+  lQue3 := UserSession.DM.ListarAliquotas2(); //old: ListarAliquotas()
+  tabela:='';
+  KEY_LINE_OLD:= 'start';
+  QT_COL:= 0;
+
+
+  lQue3.First;
+  while NOT lQue3.Eof do
+  begin
+
+
+    {Chave da linha}
+    KEY_LINE:= lQue3.FieldByName('KEY_LINE').AsString;
+
+
+    if ( KEY_LINE_OLD='start')  then begin
+
+      {-----------------------------------------------------------------------------------------------}
+      { CAMPOS CHAVE ---------------------------------------------------------------------------------}
+      {-----------------------------------------------------------------------------------------------}
+      tabtd:='';
+      QT_COL:= 0;
+      campo:= lQue3.FieldByName('PPSPRD').AsString.Trim;
+      tabtd:= tabtd +
+      '       <td id="fitPad"> '+campo+' </td> ';
+      campo:= lQue3.FieldByName('PPSVIGINI').AsString.Trim;
+      campo:= Concat(Copy(campo,7,2),'/',Copy(campo,5,2),'/',Copy(campo,1,4)); //YYYYMMDD -> DD/MM/YYYY
+      tabtd:= tabtd + ' <td id="fitPad"> '+campo+' </td> ';
+      campo:= lQue3.FieldByName('PPSVIGFIM').AsString.Trim;
+      campo:= Concat(Copy(campo,7,2),'/',Copy(campo,5,2),'/',Copy(campo,1,4)); //YYYYMMDD -> DD/MM/YYYY
+      tabtd:= tabtd + ' <td id="fitPad"> '+campo+' </td> '+ SLineBreak+
+      '       ';
+
+      {chave para o botao historico}
+      IDP_CDE_CDP := trim(lQue3.FieldByName('PPSID').AsString)+
+                    lQue3.FieldByName('PPSEMP').AsString+
+                    trim(lQue3.FieldByName('PPSPRD').AsString)+
+                    lQue3.FieldByName('PPSVIGINI').AsString +
+                    lQue3.FieldByName('PPSVIGFIM').AsString;  // Result : '1HDJFT2021032220211231'
+
+    end;
+
+
+      {-----------------------------------------------------------------------------------------------}
+      { ADD VALORES, ACOES E FINALIZA LINHA ----------------------------------------------------------}
+      {-----------------------------------------------------------------------------------------------}
+      if ( (KEY_LINE<>KEY_LINE_OLD) and not (KEY_LINE_OLD='start') ) then begin
+
+        {Add TD's}
+        for TD in TR_Dinamica.ListaTD do begin
+
+          tabtd:= tabtd +
+          '<td id="fitPad" class="'+TD.CalssTag+'"> '+TD.ValueTag+' </td>  ';
+
+        end;
+
+
+        {Add botao historico}
+        tabtd := tabtd + SLineBreak +
+        '       <td id="fitPad"> ' + SLineBreak +
+        '         <a title="Historico" href="javascript:fncExecutar(''Hist'', '''+IDP_CDE_CDP+''');"> '+SLineBreak+
+        '           <i class="fa fa-clock-o fa-lg" aria-hidden="true"></i> '+SLineBreak+
+        '         </a> '+SLineBreak+
+        '       </td> '+SLineBreak;
+
+
+        {Finaliza linha}
+        tabela := tabela +
+        '     <tr>                '+SLineBreak+
+                tabtd +
+        '     </tr>               '+SLineBreak;
+
+
+
+
+        {reset line}
+        {-----------------------------------------------------------------------------------------------}
+        { CAMPOS CHAVE ---------------------------------------------------------------------------------}
+        {-----------------------------------------------------------------------------------------------}
+        tabtd:='';
+        QT_COL:= 0;
+        campo:= lQue3.FieldByName('PPSPRD').AsString.Trim;
+        tabtd:= tabtd +
+        '       <td id="fitPad"> '+campo+' </td> ';
+        campo:= lQue3.FieldByName('PPSVIGINI').AsString.Trim;
+        campo:= Concat(Copy(campo,7,2),'/',Copy(campo,5,2),'/',Copy(campo,1,4)); //YYYYMMDD -> DD/MM/YYYY
+        tabtd:= tabtd + ' <td id="fitPad"> '+campo+' </td> ';
+        campo:= lQue3.FieldByName('PPSVIGFIM').AsString.Trim;
+        campo:= Concat(Copy(campo,7,2),'/',Copy(campo,5,2),'/',Copy(campo,1,4)); //YYYYMMDD -> DD/MM/YYYY
+        tabtd:= tabtd + ' <td id="fitPad"> '+campo+' </td> '+ SLineBreak+
+        '       ';
+
+        {chave para o botao historico}
+        IDP_CDE_CDP := trim(lQue3.FieldByName('PPSID').AsString)+
+                      lQue3.FieldByName('PPSEMP').AsString+
+                      trim(lQue3.FieldByName('PPSPRD').AsString)+
+                      lQue3.FieldByName('PPSVIGINI').AsString +
+                      lQue3.FieldByName('PPSVIGFIM').AsString;  // Result : '1HDJFT2021032220211231'
+
+    end;
+
+
+
+
+    {-----------------------------------------------------------------------------------------------}
+    { CAMPOS DINÂMICOS (valores) -------------------------------------------------------------------}
+    {-----------------------------------------------------------------------------------------------}
+    QT_COL:= QT_COL + 1;
+    //ID Coluna
+    ALIQ_Line := lQue3.FieldByName('ALIQ').AsString.Replace(',','');
+    TP_Line   := lQue3.FieldByName('TP').AsString.trim;
+    ID_COL    := concat('a', ALIQ_Line, TP_Line);
+    VALOR     := FloatToStrF(lQue3.FieldByName('PRC').AsFloat, ffNumber, 15, 0);
+
+    //Destaca alterado
+    colorClass:= '';
+    If lQue3.FieldByName('QTALT').AsInteger > 0 then
+      colorClass:= 'hasChange';
+
+    campo:= VALOR;
+
+    //*****@@@tabtd:= tabtd +
+    //*****@@@'<td id="fitPad" class="'+colorClass+'"> '+campo+' </td>  ';
+
+
+    {Atualiza valores do Campo dinâmico }
+    for TD in TR_Dinamica.ListaTD do begin
+
+      if TD.IDTag = ID_COL then begin
+        TD.CalssTag:= colorClass;
+        TD.ValueTag:= campo;
+      end;
+
+    end;
+
+
+
+    if lQue3.RecNo = lQue3.RecordCount then begin
+
+        {Add TD's}
+        for TD in TR_Dinamica.ListaTD do begin
+
+          tabtd:= tabtd +
+          '<td id="fitPad" class="'+TD.CalssTag+'"> '+TD.ValueTag+' </td>  ';
+
+        end;
+
+
+        {Add botao historico}
+        tabtd := tabtd + SLineBreak +
+        '       <td id="fitPad"> ' + SLineBreak +
+        '         <a title="Historico" href="javascript:fncExecutar(''Hist'', '''+IDP_CDE_CDP+''');"> '+SLineBreak+
+        '           <i class="fa fa-clock-o fa-lg" aria-hidden="true"></i> '+SLineBreak+
+        '         </a> '+SLineBreak+
+        '       </td> '+SLineBreak;
+
+
+        {Finaliza linha}
+        tabela := tabela +
+        '     <tr>                '+SLineBreak+
+                tabtd +
+        '     </tr>               '+SLineBreak;
+
+    end;
+
+
+
+
+
+    KEY_LINE_OLD:= KEY_LINE;
+    lQue3.Next;
+   end;
+
+
+
+
+  { guardando resultado da sql...}
+  IWSQL.Text := lQue3.SQL.Text;
+
+  ttCols:= IntToStr(StrToInt(ttCols)+1);
+  html := '';
+  html :=  ' <table id="DTB_TAG" class="table table-bordered table-striped table-hover reservation__fontcolor"> '+SLineBreak+
+           '   <thead> '+SLineBreak+
+           '     <tr class="'+tHeadClass+'"> '+SLineBreak+
+           '       <th colspan="3" rowspan="2" style="text-align: center; vertical-align: middle;">PRODUTO</th> '+SLineBreak+
+           '       <th colspan="'+ttCols+'" style="text-align: center; padding-bottom: 20px;">PREÇOS POR ALÍQUOTA</th> '+SLineBreak+
+           '     </tr> '+SLineBreak+
+           '     <tr class="'+tHeadClass+'"> '+SLineBreak +
+                   tagCol1 +
+           '     </tr> '+SLineBreak+
+           '     <tr class="'+tHeadClass+'"> '+SLineBreak+
+           '       <th id="fitPad">CÓD</th> '+SLineBreak+
+           '       <th id="fitPad">DT. INICIO</th> '+SLineBreak+
+           '       <th id="fitPad">DT. FIM</th> '+SLineBreak+
+                   tagCol2+
+           '     </tr> '+SLineBreak+
+           '   </thead> '+SLineBreak+
+           '   <tbody> '+SLineBreak+
+                 tabela +
+           '   </tbody> '+SLineBreak+
+           ' </table> '+SLineBreak;
 //
 //    GRID1.Text := html;
 
 
 
- end;
+  aux.saveTXT(tabela, 'DTB_TAG_body.html');
+  aux.saveTXT(html, 'DTB_TAG_full.html');
+
+  IWT_DATATABLE.RawText:= true;
+  IWT_DATATABLE.Text:= html;
 
 
+  IWT_MODAL_HIST.RawText:= true;
+  IWT_MODAL_HIST.Text:= '';
+
+end;
+
+
+function TIWFRM_Consolida.getGridHist: string;
+var
+  PRD, VIGINI, VIGFIM: string;
+
+  i: Integer;
+  ttCols, colspan, aliq: string;
+  tagCol1, tagCol2, tabela: string; //tagCol3
+  lQue, lQue2, lQue3: TADOQuery;
+  campo: string;
+  tabtd: string;
+  //IDP_CDE_CDP: string; //IDProcesso + Cod.Empresa + Cod.Produto
+  tHeadClass:string;
+begin
+
+
+
+  tHeadClass:= 'reservation__fontcolor';
+
+  PRD    := UserSession.GPPSPRD;
+  VIGINI := UserSession.GPPSVIGINI;
+  VIGFIM := UserSession.GPPSVIGFIM;
+  VIGINI := Concat(Copy(VIGINI, 7, 2), '/', Copy(VIGINI, 5, 2),'/',Copy(VIGINI, 1, 4));
+  VIGFIM := Concat(Copy(VIGFIM, 7, 2), '/', Copy(VIGFIM, 5, 2),'/',Copy(VIGFIM, 1, 4));
+
+
+
+  { Obtendo o total de colunas... }
+  ttCols := UserSession.DM.GetTotalColunasHist.ToString;
+
+  { Obtendo lista de colunas por aliquota... }
+  lQue   := UserSession.DM.ListTotColunasPorAliquotaHist;
+
+  { Obtendo lista de registros... }
+  lQue2  := UserSession.DM.ListColunasPorAliquotaHist;
+
+  { Montando colunas por aliquota...  }
+  tagCol1:='';
+  colspan:='';
+  lQue.First;
+  while not lQue.Eof do
+  begin
+    colspan := lQue.FieldByName('TOTAL').AsString;
+    aliq    := lQue.FieldByName('PPSICM').AsString;
+    tagCol1 := tagCol1 + '<th colspan="'+colspan+'" style="text-align: center;">'+aliq.Replace(',','.')+'</th> '+SLineBreak;
+    lQue.Next;
+  end;
+  lQue.Close;
+
+  tagCol2:='';
+  lQue2.First;
+  while not lQue2.Eof do
+  begin
+    aliq := lQue2.FieldByName('VALOR').AsString;
+    tagCol2 := tagCol2 + ' <th style="text-align: center;">'+aliq+'</th> '+SLineBreak;
+    lQue2.Next;
+  end;
+
+
+  { Listando os registros... }
+  lQue3 := UserSession.DM.ListarAliquotasHist(UserSession.GPPSID, UserSession.GPPSEMP, UserSession.GPPSPRD);
+  tabtd:='';
+  tabela:='';
+  lQue3.First;
+  while NOT lQue3.Eof do
+  begin
+   tabela := tabela + ' <tr> '+SLineBreak;
+   for i := 3 to lQue3.Fields.Count -1 do
+   begin
+     case i of
+        3,4 : campo:= Concat(Copy(lQue3.Fields[i].AsString,7,2),'/',Copy(lQue3.Fields[i].AsString,5,2),'/',Copy(lQue3.Fields[i].AsString,1,4)); //YYYYMMDD -> DD/MM/YYYY
+       else
+             campo:= FloatToStrF(lQue3.Fields[i].AsFloat, ffNumber, 15, 0);
+     end;
+     tabtd:= tabtd + ' <td id="fitPad"> '+campo+' </td> '+ SLineBreak;
+   end;
+   tabela:=tabela + tabtd + ' </tr> '+SLineBreak;
+   tabtd:='';
+   lQue3.Next;
+  end;
+
+
+  html := '';
+  html :=
+  ' <table id="GRID" class="table table-bordered table-striped table-hover '+tHeadClass+'"> '+SLineBreak+
+  '    <thead> '+SLineBreak+
+  '        <tr> '+SLineBreak+
+  '            <th colspan="2" rowspan="2" style="text-align: center;">VIGÊNCIA</th> '+SLineBreak+
+  '            <th colspan="'+ttCols+'" style="text-align: center;">PREÇOS POR ALÍQUOTA</th> '+SLineBreak+
+  '        </tr> '+SLineBreak+
+  '        <tr> '+SLineBreak +
+                    tagCol1 +
+  '        </tr> '+SLineBreak+
+  '        <tr> '+SLineBreak+
+  '            <th>DT. INÍCIO</th> '+SLineBreak+
+  '            <th>DT. FIM</th> '+SLineBreak+
+                     tagCol2+
+  '        </tr> '+SLineBreak+
+  '    </thead> '+SLineBreak+
+  '    <tbody> '+SLineBreak+
+                  tabela +
+  '    </tbody> '+SLineBreak+
+  ' </table> '+SLineBreak;
+
+
+  Result:= html;
+
+end;
+
+
+
+function TIWFRM_Consolida.drawChekAlterados: string;
+var
+  html, ident, stsCheckBox: string;
+begin
+
+  stsCheckBox:= '';
+
+
+  if UserSession.DM.filtroConsolidacao='todos' then
+    stsCheckBox := 'unchecked';
+  if UserSession.DM.filtroConsolidacao='alterados' then
+    stsCheckBox := 'checked';
+
+
+  ident:='                  ';
+  html:=
+  ident+'<div class="custom-control custom-checkbox">                                                           '+SLineBreak+
+  ident+'  <input type="checkbox" name="terms" class="custom-control-input" id="ckhAlterados" '+stsCheckBox+'>  '+SLineBreak+
+  ident+'  <label class="custom-control-label" style="padding-top:5px; font-weight:normal"                      '+SLineBreak+
+  ident+'    for="ckhAlterados">Exibir somente alterados                                                        '+SLineBreak+
+  ident+'  </label>                                                                                             '+SLineBreak+
+  ident+'</div>                                                                                                 '+SLineBreak;
+
+  Result:= html;
+end;
+
+
+procedure TIWFRM_Consolida.drawModalHist(ID_PRODUTO:string);
+var
+  html, GRID: string;
+  PRD, VIGINI, VIGFIM: string;
+
+begin
+
+
+  //'1HDJFT2021032220211231'
+  UserSession.GPPSID     :=  Copy(Trim(ID_PRODUTO),  1, 1);
+  UserSession.GPPSEMP    :=  Copy(Trim(ID_PRODUTO),  2, 2);
+  UserSession.GPPSPRD    :=  Copy(Trim(ID_PRODUTO),  4, 3);
+  UserSession.GPPSVIGINI :=  Copy(Trim(ID_PRODUTO),  7, 8);
+  UserSession.GPPSVIGFIM :=  Copy(Trim(ID_PRODUTO), 15, 8);
+
+  PRD    := UserSession.GPPSPRD;
+  VIGINI := UserSession.GPPSVIGINI;
+  VIGFIM := UserSession.GPPSVIGFIM;
+  VIGINI := Concat(Copy(VIGINI, 7, 2), '/', Copy(VIGINI, 5, 2),'/',Copy(VIGINI, 1, 4));
+  VIGFIM := Concat(Copy(VIGFIM, 7, 2), '/', Copy(VIGFIM, 5, 2),'/',Copy(VIGFIM, 1, 4));
+
+
+
+  GRID:= getGridHist;
+
+
+  html:=
+  '  <!-- Modal Historico modal-lg -->                                                                                     '+SLineBreak+
+  '  <div class="modal fade" id="ModalHistorico" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static"> '+SLineBreak+
+  '  <div class="modal-dialog modal-dialog-centered modal-xl" role="document"> <!--style="width:1800px;"-->                '+SLineBreak+
+  '    <div class="modal-content">                                                                                         '+SLineBreak+
+  '      <div class="modal-header"> <h4 class="modal-title">Historico Alíquota</h4> </div>                                 '+SLineBreak+
+  '      <div class="modal-body" >                                                                                         '+SLineBreak+
+  '        <div class="container-fluid">                                                                                   '+SLineBreak+
+  '          <div class="row">                                                                                             '+SLineBreak+
+  '            <div class="col-xs-12">                                                                                     '+SLineBreak+
+  '              <div class="form-group">                                                                                  '+SLineBreak+
+  '                <label for="prod">Produto: '+PRD+'</label> <br/>                                                        '+SLineBreak+
+  '                <label for="datin">Data Inicial: '+VIGINI+'</label> <br/>                                               '+SLineBreak+
+  '                <label for="datfi">Data Final: '+VIGFIM+'</label> <br/>                                                 '+SLineBreak+
+  '              </div>                                                                                                    '+SLineBreak+
+  '            </div>                                                                                                      '+SLineBreak+
+  '          </div>                                                                                                        '+SLineBreak+
+  '          <div class="row">                                                                                             '+SLineBreak+
+  '            <div class="col-xs-12">                                                                                     '+SLineBreak+
+  '              <br />                                                                                                    '+SLineBreak+
+  '              <div class="table-responsive">                                                                            '+SLineBreak+
+  '                '+GRID+'                                                                                                '+SLineBreak+
+  '              </div>                                                                                                    '+SLineBreak+
+  '            </div>                                                                                                      '+SLineBreak+
+  '          </div>                                                                                                        '+SLineBreak+
+  '        </div>                                                                                                          '+SLineBreak+
+  '      </div>                                                                                                            '+SLineBreak+
+  '      <div class="modal-footer">                                                                                        '+SLineBreak+
+  '        <button type="button" class="btn btn-default"  data-dismiss="modal" id="BTNCANCELAR">Cancelar</button>          '+SLineBreak+
+  '      </div>                                                                                                            '+SLineBreak+
+  '    </div>                                                                                                              '+SLineBreak+
+  '  </div>                                                                                                                '+SLineBreak+
+  '  </div>                                                                                                                '+SLineBreak;
+
+
+  aux.saveTXT(html, 'ModalHist-FULL.html');
+  aux.saveTXT(GRID, 'ModalHist-GRID.html');
+
+  IWT_MODAL_HIST.RawText:= true;
+  IWT_MODAL_HIST.Text:= html;
+
+
+  WebApplication.CallBackResponse.AddJavaScriptToExecute('$(''#ModalHistorico'').modal(''show'');');
+
+end;
 
 
 end.

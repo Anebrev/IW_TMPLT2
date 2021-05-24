@@ -1,5 +1,5 @@
-16/05/2021 21:05:53 --> Begin Tracing:
-16/05/2021 21:05:53 --> LOGS: erro[HML_ERRO_Service_CHK_ORDEM.log]; proc[HML_PROC_Service_CHK_ORDEM.log]
-16/05/2021 21:05:53 --> DIRETORIOS: PREVIA[C:\sistemas\SGX\XML\Previa]; DEFINITIVO[C:\sistemas\SGX\XML\Definitivo]; LOG[C:\sistemas\SGX\LOG]
-16/05/2021 21:05:53 --> CONAS400: ODBC Data Source[ICE11]; Base[HSA0011]; User[]
-16/05/2021 21:05:53 --> End Tracing.
+23/05/2021 19:59:41 --> Begin Tracing:
+23/05/2021 19:59:41 --> LOGS: erro[HML_ERRO_Service_CHK_ORDEM.log]; proc[HML_PROC_Service_CHK_ORDEM.log]
+23/05/2021 19:59:41 --> DIRETORIOS: PREVIA[C:\sistemas\SGX\XML\Previa]; DEFINITIVO[C:\sistemas\SGX\XML\Definitivo]; LOG[C:\sistemas\SGX\LOG]
+23/05/2021 19:59:41 --> CONAS400: ODBC Data Source[ICE11]; Base[HSA0011]; User[]
+23/05/2021 19:59:41 --> End Tracing.

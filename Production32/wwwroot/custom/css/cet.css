@@ -125,41 +125,118 @@ button:disabled:hover  {
         
         
         
+/******************************************************************************************/        
+/*Circle Span *****************************************************************************/
+/******************************************************************************************/        
+.numberCircle {
+	font-family: "OpenSans-Semibold", Arial, "Helvetica Neue", Helvetica, sans-serif;
+	font-weight:normal;
+	display: inline-block;
+	color: #fff;
+	text-align: center;
+	line-height: 0px;
+	border-radius: 50%;
+	font-size: 10px;
+	min-width: 20px;
+	min-height: 20px;
+
+	position: relative;
+	left: -5px;
+	  top: -25px;         
+}	
+
+.numberCircle span {
+	display: inline-block;
+	padding-top: 50%;
+	padding-bottom: 50%;
+	margin-left: 1px;
+	margin-right: 1px;
+}
+
+/* Some Back Ground Colors */
+.clrGreen {
+	background: #51a529;
+}
+.clrRose {
+	background: #e6568b;
+}
+.clrOrange {
+	background: #ec8234;
+}
+.clrBlueciel {
+	background: #21adfc;                        
+}
+.clrMauve {
+	background: #7b5d99;
+}
+.clrRed {
+	background: tomato;
+}
+
+#fitPad{
+	padding-left: 1px; 
+	padding-right: 1px;
+	text-align: center;
+}
+
+#fitPadLL{        
+	text-align: center;
+	padding-left: 20px; 
+	padding-right: 1px;
+	padding-bottom: 1px;
+	font-weight: 900;
+	/*margin-bottom: 0px;*/
+}
+
+#div0 {
+	width: 40px;
+	/*height: 100px;*/
+	display: inline-block;    
+}
+
+
+
+
+
+
+
+
+   
+
+
+
         
-        
-        
-        
-        
-        
-        #numberCircle {
-			font-family: "OpenSans-Semibold", Arial, "Helvetica Neue", Helvetica, sans-serif;
-			display: inline-block;
-			color: rgb(218, 24, 24);
-			text-align: center;
-			line-height: 0px;
-			border-radius: 50%;
-			font-size: 10px;
-			min-width: 30px;
-			min-height: 30px;
-            background-color: rgb(0, 183, 255);
-		}	
-        #circulo {
-            width: 100px; height: 100px; border:1px solid rgb(255, 174, 0); background-color: rgb(0, 183, 255);
-            margin: 0px;
-            text-align: center;
-            border-radius: 50%;                        
-            font-family: "OpenSans-Semibold", Arial, "Helvetica Neue", Helvetica, sans-serif;
-            color: white;
-            font-size: 20px;
-            padding: 0;			
-            vertical-align: bottom;			            
-        } 
-        #circ_center{
-            display: flex;
-            justify-content: center;
-            align-items: center;            
-            width: 100px; height: 100px;
-            border: 3px solid green;
-            border-radius: 50%;
-            background-color: rgb(0, 183, 255);
-        }      
+
+/*Circle teste*/
+#numberCircle {
+	font-family: "OpenSans-Semibold", Arial, "Helvetica Neue", Helvetica, sans-serif;
+	display: inline-block;
+	color: rgb(218, 24, 24);
+	text-align: center;
+	line-height: 0px;
+	border-radius: 50%;
+	font-size: 10px;
+	min-width: 30px;
+	min-height: 30px;
+	background-color: rgb(0, 183, 255);
+}	
+#circulo {
+	width: 100px; height: 100px; border:1px solid rgb(255, 174, 0); background-color: rgb(0, 183, 255);
+	margin: 0px;
+	text-align: center;
+	border-radius: 50%;                        
+	font-family: "OpenSans-Semibold", Arial, "Helvetica Neue", Helvetica, sans-serif;
+	color: white;
+	font-size: 20px;
+	padding: 0;			
+	vertical-align: bottom;			            
+} 
+#circ_center{
+	display: flex;
+	justify-content: center;
+	align-items: center;            
+	width: 100px; height: 100px;
+	border: 3px solid green;
+	border-radius: 50%;
+	background-color: rgb(0, 183, 255);
+}      

@@ -27,7 +27,7 @@ type
   private
     //fPAGE_ID, fFRM_TITLE, fFRIENDLY_NAME: string;
   public
-    IdAcao: Integer;
+    IdAcao: string;
     Acao: string;
     //const
       PAGE_ID, FRM_TITLE, FRIENDLY_NAME: string;
@@ -75,7 +75,7 @@ begin
   try
 
     Acao:= '';
-    IdAcao:= 0;
+    IdAcao:= '';//0;
     sl.StrictDelimiter:= true;
     sl.CommaText:= EventParams.Values['Params'];
     s:= sl.CommaText;
@@ -89,7 +89,8 @@ begin
         Acao:= sl.ValueFromIndex[i];
 
       if i=1 then
-        IdAcao:= StrToInt(sl.ValueFromIndex[i]);
+        IdAcao:= sl.ValueFromIndex[i];
+        //IdAcao:= StrToInt(sl.ValueFromIndex[i]);
 
     end;
 
@@ -110,6 +111,7 @@ begin
 
 
 
+
     //Form Index
     if ( (Acao = IWFRM_Index.PAGE_ID) and (UserSession.ActivePage <> Acao) ) then begin
 
@@ -127,6 +129,7 @@ begin
 
     end;
 
+
     //Form Consolida **Movido p/ avançar em FRM_PROCESSA
     //if ( (Acao = IWFRM_Consolida.PAGE_ID) and (UserSession.ActivePage <> Acao) ) then begin
     //
@@ -139,6 +142,7 @@ begin
     //  end;
     //
     //end;
+
 
     //Form Prévias
     if ( (Acao = IWFRM_Previas.PAGE_ID) and (UserSession.ActivePage <> Acao) ) then begin
@@ -173,13 +177,13 @@ begin
 
     if Acao = 'H1' then begin
 
-      IWLabel1.Text:= '<h1> ConteUdo H1 </h1>';
+      IWLabel1.Text:= '<h1> Conte�do H1 </h1>';
 
     end;
 
 
     //Another options
-    If IdAcao = 1 then begin
+    If IdAcao = '1' then begin
 
 
     end;
@@ -240,11 +244,28 @@ begin
   end;
 
 
+    //if AName = 'PagePath' then
+  //  VValue := 'Home | Processa'; //get PageName from usersession.PageName
+
+
+
+
+
+
+
 end;
+
+
+
+
 
 
 //initialization
   //TIWBase.SetAsMainForm;
+
+
+
+
 
 
 end.

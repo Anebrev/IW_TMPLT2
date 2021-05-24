@@ -8,8 +8,8 @@ uses
   IWBaseLayoutComponent, IWBaseContainerLayout, IWContainerLayout,
   IWTemplateProcessorHTML, IWCompLabel, IWVCLBaseControl, IWBaseControl,
   IWBaseHTMLControl, IWControl, IWCompButton,
-  Data.Win.ADODB, IWAppForm, SweetAlerts,
-  clsAuxiliar
+  Data.Win.ADODB, IWAppForm,
+  SweetAlerts, clsAuxiliar
   ;
 
 type
@@ -19,7 +19,7 @@ type
     procedure prc_Acao(EventParams: TStringList); override;
   private
     checked: boolean;
-    aux: Auxiliar;
+    //aux: Auxiliar;
     function getStepProgress(typeTAG:string): string;
   public
     const
@@ -47,7 +47,7 @@ begin
     UserSession.frm_title:= FRM_TITLE;
     UserSession.friendlyPageName:= FRIENDLY_NAME;
     checked:= false;
-     //IWFRM_Processa.UpdateMode:=  tiwforupdatmode  'umPartial';
+    //IWFRM_Processa.UpdateMode:=  tiwforupdatmode  'umPartial';
 
 end;
 
@@ -157,9 +157,7 @@ begin
 
   if AName = 'Grid' then
   begin
-
-
-    FQue:=  ServerController.UserSession.DM.ListarProcessos();//Controller.DM.ListarProcessos;
+    FQue:=  UserSession.DM.ListarProcessos();//Controller.DM.ListarProcessos;
 
     FQue.First;
     while NOT FQue.eof do
@@ -177,9 +175,13 @@ begin
       tabtd:='';
       FQue.Next;
     end;
+    //lQue.Close;
+    //lQue.Free;
+    //aux1.fechaCon(CONN);
+
 
     html:=
-    '<table id="GRID" class="table table-bordered table-striped table-hover" style="width:100%"> '+SLineBreak+
+    '<table id="GRID" class="table table-bordered table-striped table-hover"> '+SLineBreak+
     '    <thead>                                                              '+SLineBreak+
     '        <tr>                                                             '+SLineBreak+
     '            <th style="text-align: center;"></th>                        '+SLineBreak+
@@ -198,10 +200,6 @@ begin
 
     VValue := html;
 
-
-    //UserSession.DM.aux1.fechaCon(UserSession.DM.CONN);
-    aux.fechaCon(UserSession.DM.CONN);
-
   end;
 
 
@@ -217,9 +215,7 @@ begin
 
   if Acao = 'Sel' then begin
 
-
-
-    if ( UserSession.GIDPROC=IdAcao.ToString )  then begin
+    if ( UserSession.GIDPROC=IdAcao )  then begin
       if checked then begin
         checked:= false;
         UserSession.GIDPROC:= '';
@@ -227,47 +223,26 @@ begin
     end
     else begin
       checked:= true;
-      UserSession.GIDPROC:= IdAcao.ToString;
+      UserSession.GIDPROC:= IdAcao;//.ToString;
     end;
-
 
      //IDPROC.Text := IdAcao;
    end;
 
 
-  //if Acao = 'Cons' then
-  //begin
-  //
-  // //call consolidação
-  // //TIWAppForm(WebApplication.ActiveForm).Release;
-  // //TfrmListarAliquotas2.Create(WebApplication).Show;
-  //
-  //  AddToInitProc(swalError('ATENÇÃO','Selecione um processo para avançar para a próxima etapa.'));
-  //  TIWAppForm(WebApplication.ActiveForm).Release;
-  //  TIWFRM_Consolida.Create(WebApplication).Show;
-  //
-  //
-  // //prc_Acao('', 0);
-  //
+  if (Acao = 'Consolidar') then begin
 
-
-
-    if (Acao = 'Consolidar') then begin
-
-
-      if UserSession.GIDPROC='' then
-        AddToInitProc(swalError('ATENÇÃO','Selecione um processo para avançar para a próxima etapa.'))
-        //WebApplication.ShowMessage('Selecione um processo para avançar para a próxima etapa')
-      else begin
-        TIWAppForm(WebApplication.ActiveForm).Release;
-        TIWFRM_Consolida.Create(WebApplication).Show;
-      end;
-
+    if UserSession.GIDPROC='' then
+      AddToInitProc(swalError('ATENÇÃO','Selecione um processo para avançar para a próxima etapa.'))
+    else begin
+      TIWAppForm(WebApplication.ActiveForm).Release;
+      TIWFRM_Consolida.Create(WebApplication).Show;
     end;
 
+  end;
+
+
 end;
-
-
 
 
 

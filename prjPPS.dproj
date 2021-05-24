@@ -150,6 +150,8 @@
         <DCCReference Include="DM\clsLog.pas"/>
         <DCCReference Include="DM\ConfigENV.pas"/>
         <DCCReference Include="plugins\SweetAlerts.pas"/>
+        <DCCReference Include="DM\uTag_TD.pas"/>
+        <DCCReference Include="DM\uTag_TR.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

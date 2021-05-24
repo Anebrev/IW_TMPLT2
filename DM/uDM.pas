@@ -4,14 +4,9 @@ interface
 
 uses
   System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB,
-  vcl.forms,
-    //ActiveX,
-    Registry,
-  //vcl.forms,
-  //ActiveX,
-  //Registry,
+  vcl.forms, Registry, //ActiveX,
   //classes complementares
-  ConfigENV, clsLog, clsAuxiliar
+  ConfigENV, clsLog, clsAuxiliar, clsAux
   ;
 
 type
@@ -25,48 +20,57 @@ type
     FUserName: string;
     FLastLogin: TDateTime;
     LOGGED: boolean;
-    conAS400: string;
     BASE_AS400: TADOConnection;
-    ENV: string;
+    conAS400: string;
+    MY_ENV: string;
     strAux: string;
     lQue: TADOQuery;
+    aux: Auxiliar2;
 
     //logSGX: Log;
     conDataSrcAS400, conBaseAS400, conPersistSecAS400, conProviderAS400: string;
     spPPS_PROC: TADOStoredProc;
 
-    //aux1: Auxiliar;
-    //aux2: Auxiliar;
     //function criaProcedures(sobrescrever:boolean): boolean;
-    //function criaProcedure_PROCPPS(sobrescrever:Boolean): Boolean;
     function criaProcedures2(sobrescrever: boolean): Boolean;
     function criaProcedure_PROCPPS(sobrescrever: boolean): Boolean;
     procedure conecta();
   public
 
     PROG_ENV: PRC_FUNCS;
+    filtroConsolidacao: string;
+    //programaPronto: boolean;
     CONN: TADOConnection;
     aux1: Auxiliar;
-    //programaPronto: boolean;
     erroLogin: string;
+
     property UserName: string read FUserName write FUserName;
     property IDUsuario: string read FIDUsuario write FIDUsuario;
     property LastLogin: TDateTime read FLastLogin write FLastLogin;
+
+
+
+
     //constructor Create(Sender: TObject);
     function LoginENV(USR, PASS, ENV:string): boolean;
 
-    //Listas
+    /////////////////////////////////////////////////////////////////////////
+    //Listas ////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+    //Processos
     function ListarProcessos(): TADOQuery;
-
-    function GetTotalColunas: integer;
+    //Consolidação - por Aliquotas
     function ListTotColunasPorAliquota: TADOQuery;
     function ListColunasPorAliquota: TADOQuery;
-
-
     function GetTotalColunas2(): integer;
-
-
-
+    function qtAltAliq(aliq:double): integer;
+    function ListarAliquotas(): TADOQuery;
+    function ListarAliquotas2(): TADOQuery;
+    //Histórico
+    function GetTotalColunasHist: integer;
+    function ListTotColunasPorAliquotaHist: TADOQuery;
+    function ListColunasPorAliquotaHist: TADOQuery;
+    function ListarAliquotasHist(IDPROC, CDEMP, CDPROD: string): TADOQuery;
 
   end;
 
@@ -81,9 +85,6 @@ uses
 
 
 
-
-
-//{$REGION 'ENV/Login'}
 procedure TDM.DataModuleCreate(Sender: TObject);
 begin
 
@@ -103,8 +104,6 @@ begin
   //  LoginENV('SB037635', 'SB037635', 'PY');
   //end;
 
-
-
 end;
 
 
@@ -120,6 +119,7 @@ begin
   end;
 
 end;
+
 
 function TDM.criaProcedures2(sobrescrever: boolean): Boolean;
 var
@@ -250,156 +250,11 @@ begin
 end;
 
 
-
-function TDM.ListarProcessos(): TADOQuery;
-var
-  lQue: TADOQuery;
-  //qt: integer;
-begin
-
-
-  //strAux:=  conAS400;
-  //CONN.ConnectionString:= conAS400;
-  //strAux:=  CONN.ConnectionString;  //BASE_AS400.ConnectionString;
-  //aux1.conectaBase2(CONN);
-
-  conecta();
-  lQue:= TADOQuery.Create(nil);
-  lQue.Connection:= CONN;//BASE_AS400;
-  //lQue.SQL.Clear;
-
-
-  try
-
-    if ENV <> 'TST'  then begin
-      lQue.SQL.Add('SELECT ');
-      lQue.SQL.Add('RIGHT(REPEAT(''0'', 6) || PPSID, 6) IDPROC, ');
-      lQue.SQL.Add('PRCAUDUSR,  ');
-      lQue.SQL.Add('TO_CHAR(TO_DATE(PRCDT, ''YYYYMMDD''), ''DD/MM/YYYY'') DTPROC, ');
-      lQue.SQL.Add('TO_CHAR(TO_DATE(CAST(PRCVIGINI AS VARCHAR(8)),''YYYYMMDD''),''DD/MM/YYYY'') AS DTVIGINI, ');
-      lQue.SQL.Add('TO_CHAR(TO_DATE(CAST(PRCVIGFIM AS VARCHAR(8)),''YYYYMMDD''),''DD/MM/YYYY'') AS DTVIGFIM, ');
-      lQue.SQL.Add('CASE PRCSTATUS ');
-      lQue.SQL.Add('	WHEN 0 THEN ''PROCESSADO'' ');
-      lQue.SQL.Add('	WHEN 1 THEN ''ENVIADO'' ');
-      lQue.SQL.Add('	WHEN 2 THEN ''CONSOLIDADO'' ');
-      lQue.SQL.Add('END PRCSTATUS ');
-      lQue.SQL.Add('FROM LPDDBICE.PPSPROCC ');
-    end;
-
-
-    if ENV = 'TST'  then begin
-      lQue.SQL.Add('SELECT ');
-      //lQue.SQL.Add('RIGHT(REPEAT(''0'', 6) || PPSID, 6) IDPROC, ');
-      lQue.SQL.Add('PPSID as IDPROC,  ');
-      lQue.SQL.Add('PRCAUDUSR,  ');
-      lQue.SQL.Add('PRCDT,  ');
-      //lQue.SQL.Add('TO_CHAR(TO_DATE(PRCDT, ''YYYYMMDD''), ''DD/MM/YYYY'') DTPROC, ');
-      lQue.SQL.Add('PRCVIGINI, PRCVIGFIM, ');
-      //lQue.SQL.Add('TO_CHAR(TO_DATE(CAST(PRCVIGINI AS VARCHAR(8)),''YYYYMMDD''),''DD/MM/YYYY'') AS DTVIGINI, ');
-      //lQue.SQL.Add('TO_CHAR(TO_DATE(CAST(PRCVIGFIM AS VARCHAR(8)),''YYYYMMDD''),''DD/MM/YYYY'') AS DTVIGFIM, ');
-      lQue.SQL.Add('CASE PRCSTATUS ');
-      lQue.SQL.Add('	WHEN 0 THEN ''PROCESSADO'' ');
-      lQue.SQL.Add('	WHEN 1 THEN ''ENVIADO'' ');
-      lQue.SQL.Add('	WHEN 2 THEN ''CONSOLIDADO'' ');
-      lQue.SQL.Add('END PRCSTATUS ');
-      lQue.SQL.Add('FROM LPDDBICE.PPSPROCC ');
-    end;
-
-    lQue.Open;
-
-  finally
-
-    //qt:= GetTotalColunas2();
-
-    Result := lQue;
-  end;
-
-
-
-
-
-end;
-
-
-function TDM.GetTotalColunas2(): integer;
-var
- totCol, idproc: integer;
-begin
-
-  totCol:= 0;
-  //UserSession.GIDPROC:= '1';
-
-  idproc:= StrToInt(UserSession.GIDPROC);
-
-  //aux1.fechaCon(CONN);
-  //CONN.ConnectionString:= conAS400;
-  //aux1.conectaBase2(CONN);
-  conecta();
-  lQue:= TADOQuery.Create(nil);
-  lQue.Connection := CONN;
-  lQue.SQL.Clear;
-
-
-
-  TRY
-  Try
-    lQue.SQL.Add('SELECT SUM(REG) TOTAL FROM (');
-    lQue.SQL.Add(' SELECT PPSICM, COUNT(DISTINCT PPSTP) REG ');
-    //lQue.SQL.Add(' FROM (SELECT DISTINCT PPSTP, PPSICM FROM LPDDBICE.PPSPRICE WHERE PPSID = :pID and PPSICM > 0) X');
-    lQue.SQL.Add(' FROM (SELECT DISTINCT PPSTP, PPSICM FROM LPDDBICE.PPSPRICE WHERE PPSID = 1 and PPSICM > 0 ) X');
-    lQue.SQL.Add(' GROUP BY PPSICM ');
-    lQue.SQL.Add(')vw');
-    //aux1.criaParametroQRY(lQue, 'pID', ftInteger, 4, 0);
-    //With lQue.Parameters.AddParameter do
-    //begin
-    //  Name      := 'pID';
-    //  DataType  := ftInteger;
-    //end;
-    //lQue.Parameters.ParamByName('pID').Value:= idproc; //UserSession.GIDPROC;
-    lQue.Open;
-    totCol:= lQue.FieldByName('TOTAL').AsInteger + 1;
-  Except
-      //On E:Exception do
-      on e : EDatabaseError do
-      begin
-        strAux:= E.Message;
-      end;
-  End;
-  Finally
-    lQue.Close;
-    lQue.Free;
-    aux1.fechaCon(CONN);
-    Result := totCol;
-  END;
-
-
-
-
-  Result:= totCol;
- end;
-
-
 function TDM.LoginENV(USR, PASS, ENV:string): boolean;
-//var
-  //strAux: string;
-  //strConn: string;
 begin
 
-  self.ENV:= ENV;
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //Connect MySQL //////////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //strConn:= 'DRIVER={MySQL ODBC 3.51 Driver}; SERVER=localhost; port=3307; DATABASE=mysql; USER=root; PASSWORD=12345;OPTION=3;';
-//  strConn:= 'DRIVER={MySQL ODBC 8.0 Ansi Driver}; SERVER=localhost; port=3307; DATABASE=mysql; USER=root; PASSWORD=12345;OPTION=3';
-//  conn:= TADOConnection.Create(nil);
-//  conn.ConnectionString:= strConn;
-//  LOGGED:= aux1.conectaBase2(conn);
-//  conn.Connected:= true;;
-
-
-
-
+  self.MY_ENV:= ENV;
 
   if ENV='PY' then begin
     conDataSrcAS400    := PROG_ENV.conDataSrcAS400_PY;
@@ -414,13 +269,14 @@ begin
     conPersistSecAS400 := PROG_ENV.conPersistSecAS400;
     conProviderAS400   := PROG_ENV.conProviderAS400;
   end;
-  conAS400:= aux1.doConnString(conDataSrcAS400, USR, PASS, conProviderAS400, conPersistSecAS400);
 
-  if ENV='TST' then begin
-    conAS400:=
-    //'DRIVER={MySQL ODBC 8.0 Ansi Driver}; SERVER=localhost; port=3307; DATABASE=mysql; USER=root; PASSWORD=12345;OPTION=3';
+  conAS400:= aux1.doConnString(conDataSrcAS400, USR, PASS, conProviderAS400, conPersistSecAS400);
+
+  if ENV='TST' then begin
+    conAS400:=
     'DRIVER={MySQL ODBC 8.0 Ansi Driver}; SERVER=localhost; port=3307; DATABASE=lpddbice; USER=anebrev; PASSWORD=12345;OPTION=3';
   end;
+
 
 
 
@@ -463,7 +319,6 @@ begin
     IDUsuario:= USR;
 
 
-
     //Cria procedures no ambiente selecionado
     if LOGGED then begin
 
@@ -479,59 +334,155 @@ begin
 
 
 
-
-
   Result:= LOGGED;
 
 end;
 
-function TDM.GetTotalColunas: integer;
-var
-  FQue: TADOQuery;
-  idproc: string;
-  totCol: integer;
+
+function TDM.ListarProcessos(): TADOQuery;
 begin
 
-  totCol:= 0;
-  idproc:= UserSession.GIDPROC;
 
-  strAux:=  conAS400;
-  CONN.ConnectionString:= conAS400;
-  strAux:=  CONN.ConnectionString;
-  aux1.conectaBase2(CONN);
+  conecta();
+  lQue:= TADOQuery.Create(nil);
+  lQue.Connection:= CONN; //BASE_AS400;
 
-  FQue:= TADOQuery.Create(nil);
-  FQue.Connection := CONN; //ADOConn;
-  FQue.SQL.Clear;
+
   TRY
   Try
-    FQue.SQL.Add('SELECT SUM(REG) TOTAL FROM(');
-    FQue.SQL.Add(' SELECT PPSICM, COUNT(DISTINCT PPSTP) REG ');
-    FQue.SQL.Add(' FROM (SELECT DISTINCT PPSTP, PPSICM FROM LPDDBICE.PPSPRICE WHERE PPSID = :pID and PPSICM > 0 ');
-    FQue.SQL.Add(') X');
-	  FQue.SQL.Add('GROUP BY PPSICM )');
-    aux1.criaParametroQRY(FQue, 'pID', ftInteger, 4, 0);
-    FQue.Parameters.ParamByName('pID').Value:= 2; //idproc;//UserSession.GIDPROC;
-    FQue.Open;
-    //Result := FQue.FieldByName('TOTAL').AsInteger + 1;
-    totCol:= FQue.FieldByName('TOTAL').AsInteger + 1;
+
+    if MY_ENV <> 'TST'  then begin
+      lQue.SQL.Add('SELECT ');
+      lQue.SQL.Add('RIGHT(REPEAT(''0'', 6) || PPSID, 6) IDPROC, ');
+      lQue.SQL.Add('PRCAUDUSR,  ');
+      lQue.SQL.Add('TO_CHAR(TO_DATE(PRCDT, ''YYYYMMDD''), ''DD/MM/YYYY'') DTPROC, ');
+      lQue.SQL.Add('TO_CHAR(TO_DATE(CAST(PRCVIGINI AS VARCHAR(8)),''YYYYMMDD''),''DD/MM/YYYY'') AS DTVIGINI, ');
+      lQue.SQL.Add('TO_CHAR(TO_DATE(CAST(PRCVIGFIM AS VARCHAR(8)),''YYYYMMDD''),''DD/MM/YYYY'') AS DTVIGFIM, ');
+      lQue.SQL.Add('CASE PRCSTATUS ');
+      lQue.SQL.Add('	WHEN 0 THEN ''PROCESSADO'' ');
+      lQue.SQL.Add('	WHEN 1 THEN ''ENVIADO'' ');
+      lQue.SQL.Add('	WHEN 2 THEN ''CONSOLIDADO'' ');
+      lQue.SQL.Add('END PRCSTATUS ');
+      lQue.SQL.Add('FROM LPDDBICE.PPSPROCC ');
+    end;
+
+    if MY_ENV = 'TST'  then begin
+      lQue.SQL.Add('SELECT ');
+      lQue.SQL.Add('PPSID as IDPROC,  ');
+      lQue.SQL.Add('PRCAUDUSR,  ');
+      lQue.SQL.Add('PRCDT as DTPROC,  ');
+      lQue.SQL.Add('PRCVIGINI as DTVIGINI, PRCVIGFIM as DTVIGFIM, ');
+      lQue.SQL.Add('CASE PRCSTATUS ');
+      lQue.SQL.Add('	WHEN 0 THEN ''PROCESSADO'' ');
+      lQue.SQL.Add('	WHEN 1 THEN ''ENVIADO'' ');
+      lQue.SQL.Add('	WHEN 2 THEN ''CONSOLIDADO'' ');
+      lQue.SQL.Add('END PRCSTATUS ');
+      lQue.SQL.Add('FROM LPDDBICE.PPSPROCC ');
+    end;
+
+    lQue.Open;
+
   Except
       On E:Exception do
+      //on e : EDatabaseError do
       begin
         strAux:= E.Message;
       end;
   End;
   Finally
-    FQue.Close;
-    FQue.Free;
+    //aux1.fechaCon(CONN);
+    Result := lQue;
+  END;
+
+
+
+
+
+//
+//  try
+//    lQue.SQL.Add('SELECT ');
+//    lQue.SQL.Add('RIGHT(REPEAT(''0'', 6) || PPSID, 6) IDPROC, ');
+//    lQue.SQL.Add('PRCAUDUSR,  ');
+//    lQue.SQL.Add('TO_CHAR(TO_DATE(PRCDT, ''YYYYMMDD''), ''DD/MM/YYYY'') DTPROC, ');
+//    lQue.SQL.Add('TO_CHAR(TO_DATE(CAST(PRCVIGINI AS VARCHAR(8)),''YYYYMMDD''),''DD/MM/YYYY'') AS DTVIGINI, ');
+//    lQue.SQL.Add('TO_CHAR(TO_DATE(CAST(PRCVIGFIM AS VARCHAR(8)),''YYYYMMDD''),''DD/MM/YYYY'') AS DTVIGFIM, ');
+//    lQue.SQL.Add('CASE PRCSTATUS ');
+//    lQue.SQL.Add('	WHEN 0 THEN ''PROCESSADO'' ');
+//    lQue.SQL.Add('	WHEN 1 THEN ''ENVIADO'' ');
+//    lQue.SQL.Add('	WHEN 2 THEN ''CONSOLIDADO'' ');
+//    lQue.SQL.Add('END PRCSTATUS ');
+//    lQue.SQL.Add('FROM LPDDBICE.PPSPROCC ');
+//    lQue.Open;
+//    Result := lQue;
+//  finally
+//  end;
+
+
+end;
+
+
+
+function TDM.GetTotalColunas2(): integer;
+var
+ totCol: integer; //idproc
+ SQL: string;
+begin
+
+  totCol:= 0;
+  //UserSession.GIDPROC:= '1';
+  //idproc:= StrToInt(UserSession.GIDPROC);
+
+  conecta();
+  lQue:= TADOQuery.Create(nil);
+  lQue.Connection := CONN;
+  lQue.SQL.Clear;
+
+
+
+  TRY
+  Try
+
+
+    SQL:=
+    'SELECT                                                              '+SLineBreak+
+    '  SUM(REG) as TOTAL                                                 '+SLineBreak+
+    'FROM                                                                '+SLineBreak+
+    '  (Select PPSICM, COUNT(DISTINCT PPSTP) REG from LPDDBICE.PPSCONSOL '+SLineBreak+
+    '   where PPSID='+UserSession.GIDPROC+' and PPSICM > 0               '+SLineBreak+
+    '   Group by PPSICM )X                                               ';
+    lQue.SQL.Add(SQL);
+    lQue.Open;
+    totCol:= lQue.FieldByName('TOTAL').AsInteger;
+
+
+//    lQue.SQL.Add('SELECT SUM(REG) TOTAL FROM (');
+//    lQue.SQL.Add(' SELECT PPSICM, COUNT(DISTINCT PPSTP) REG ');
+//    lQue.SQL.Add(' FROM (SELECT DISTINCT PPSTP, PPSICM FROM LPDDBICE.PPSPRICE WHERE PPSID = '+UserSession.GIDPROC+' and PPSICM > 0 ) X');
+//    lQue.SQL.Add(' GROUP BY PPSICM ');
+//    lQue.SQL.Add(')vw');
+//    lQue.Open;
+//    totCol:= lQue.FieldByName('TOTAL').AsInteger; //+ 1;
+  Except
+      On E:Exception do
+      //on e : EDatabaseError do
+      begin
+        strAux:= E.Message;
+      end;
+  End;
+  Finally
+    lQue.Close;
+    lQue.Free;
+    aux1.fechaCon(CONN);
     Result := totCol;
   END;
 
-end;
+
+ end;
 
 function TDM.ListTotColunasPorAliquota: TADOQuery;
 var
   lQue: TADOQuery;
+  SQL: string;
 begin
 
 
@@ -541,13 +492,21 @@ begin
   lQue.SQL.Clear;
 
   try
-    lQue.SQL.Add('SELECT PPSICM, COUNT(DISTINCT PPSTP) TOTAL');
-    lQue.SQL.Add('FROM (SELECT DISTINCT PPSTP, PPSICM FROM LPDDBICE.PPSPRICE WHERE PPSID = :pID and PPSICM > 0) X');
-    aux1.criaParametroQRY(lQue, 'pID', ftInteger, 4, 0);
-    lQue.Parameters.ParamByName('pID').Value:= UserSession.GIDPROC;
-    lQue.SQL.Add('GROUP BY PPSICM');
-    lQue.SQL.Add('ORDER BY PPSICM');
+
+    SQL:=
+    'SELECT                                                                         '+SLineBreak+
+    '  PPSICM, count(distinct PPSTP) TOTAL, sum(QTALT) as QTALT                     '+SLineBreak+
+    'FROM                                                                           '+SLineBreak+
+    '  (Select PPSICM, PPSTP, sum(QTALT) as QTALT                                   '+SLineBreak+
+    '   from LPDDBICE.PPSCONSOL where PPSID='+UserSession.GIDPROC+' and PPSICM > 0  '+SLineBreak+
+    '   group by PPSICM, PPSTP                                                      '+SLineBreak+
+    '   order by PPSICM, PPSTP                                                      '+SLineBreak+
+    '  )X                                                                           '+SLineBreak+
+    'GROUP by PPSICM                                                                '+SLineBreak+
+    'ORDER by PPSICM ';
+    lQue.SQL.Add(SQL);
     lQue.Open;
+
     Result := lQue;
   finally
 
@@ -558,6 +517,7 @@ end;
 function TDM.ListColunasPorAliquota: TADOQuery;
 var
   lQue: TADOQuery;
+  SQL: string;
 begin
 
 
@@ -567,13 +527,30 @@ begin
   lQue.SQL.Clear;
 
   try
-    lQue.SQL.Add('SELECT PPSICM CAMPO, PPSTP VALOR FROM (');
-    lQue.SQL.Add(' SELECT DISTINCT PPSTP, PPSICM ');
-    lQue.SQL.Add(' FROM LPDDBICE.PPSPRICE WHERE PPSID = '+UserSession.GIDPROC+' and PPSICM > 0');
-    lQue.SQL.Add(')X');
-    lQue.SQL.Add('GROUP BY PPSICM, PPSTP');
-    lQue.SQL.Add('ORDER BY PPSICM');
+
+
+    SQL:=
+    'SELECT                                                   '+SLineBreak+
+    '  PPSICM CAMPO, PPSTP VALOR                              '+SLineBreak+
+    'FROM                                                     '+SLineBreak+
+    '  (Select distinct PPSICM, PPSTP from LPDDBICE.PPSCONSOL '+SLineBreak+
+    '   where PPSID='+UserSession.GIDPROC+' and PPSICM > 0    '+SLineBreak+
+    '  )X                                                     '+SLineBreak+
+    'GROUP by PPSICM, PPSTP                                   '+SLineBreak+
+    'ORDER by PPSICM, PPSTP';
+    lQue.SQL.Add(SQL);
     lQue.Open;
+
+
+//    lQue.SQL.Add('SELECT PPSICM CAMPO, PPSTP VALOR FROM (');
+//    lQue.SQL.Add(' SELECT DISTINCT PPSTP, PPSICM ');
+//    lQue.SQL.Add(' FROM LPDDBICE.PPSPRICE WHERE PPSID = '+UserSession.GIDPROC+' and PPSICM > 0');
+//    lQue.SQL.Add(')X');
+//    lQue.SQL.Add('GROUP BY PPSICM, PPSTP');
+//    lQue.SQL.Add('ORDER BY PPSICM');
+//    lQue.Open;
+
+
     Result := lQue;
   finally
   end;
@@ -581,9 +558,309 @@ begin
 
 end;
 
+function TDM.qtAltAliq(aliq:double): integer;
+var
+  qtAlt: integer;
+begin
+
+  qtAlt:= 1;
+
+
+  if aliq = 12 then
+    qtAlt:= 42;
+  if aliq= 17 then
+    qtAlt:= 13;
+  if aliq= 17.5 then
+    qtAlt:= 11;
+  if aliq= 18 then
+    qtAlt:= 22;
+  if aliq= 28 then
+    qtAlt:= 1;
 
 
 
+  Result:= qtAlt;
+end;
+
+function TDM.ListarAliquotas(): TADOQuery;
+var
+  lQue: TADOQuery;
+  SQL, aliq, aliqt, tipo, leftjoin, campos: string;
+  idproc: string;
+  idField: string;
+  aliqOLD: string;
+begin
+
+  conecta();
+  lQue := TADOQuery.Create(nil);
+  lQue.Connection := CONN;//ADOConn;
+  lQue.SQL.Clear;
+
+  IDPROC:= UserSession.GIDPROC;
+
+  try
+
+    SQL:=
+    'SELECT                                                   '+SLineBreak+
+    '  PPSICM ALIQ, PPSTP TIPO                                '+SLineBreak+
+    'FROM                                                     '+SLineBreak+
+    '  (Select distinct PPSICM, PPSTP from LPDDBICE.PPSCONSOL '+SLineBreak+
+    '   where PPSID='+IDPROC+' and PPSICM > 0                 '+SLineBreak+
+    '  )X                                                     '+SLineBreak+
+    'ORDER BY PPSICM, PPSTP' ;
+    lQue.SQL.Add(SQL);
+    lQue.Open;
+
+
+
+
+    While not lQue.Eof do begin
+      aliq  := lQue.FieldByName('ALIQ').AsString;
+      aliqt := aliq;
+      aliq  := aliq.Replace(',','');
+      aliqt := aliqt.Replace(',','.');
+      tipo  := lQue.FieldByName('TIPO').AsString.trim;
+      idField:= concat('a',aliq,tipo);
+      //campo := campo + ',' + idField+'.PPSVLPRP'; //*** orig
+
+      if ( (aliqOLD<>'') and (aliqOLD<>aliq) ) then begin
+        campos := campos +SLineBreak;
+      end;
+      aliqOLD:= aliq;
+
+      campos := campos + ', ' + idField+'.PPSPRECO as PRC_'+idField;
+
+      leftjoin := leftjoin+
+                  'LEFT join LPDDBICE.PPSCONSOL ' + idField + SLineBreak+
+                  ' ON  ('+idField+'.PPSPRD    = a.PPSPRD)'+
+                  ' and ('+idField+'.PPSVIGINI = a.PPSVIGINI) and ('+idField+'.PPSVIGFIM=a.PPSVIGFIM) '+
+                  ' and ('+idField+'.PPSICM    = '+QuotedStr(aliqt)+') and ('+idField+'.PPSTP='+QuotedStr(tipo)+') '+
+                  ' and ('+idField+'.PPSID     = a.PPSID) '+SLineBreak;
+      lQue.Next;
+    End;
+
+
+    SQL :=
+    'select * from ( '+SLineBreak+
+    'SELECT DISTINCT a.PPSID, a.PPSEMP, a.PPSPRD, a.PPSVIGINI, a.PPSVIGFIM '+SLineBreak +
+     campos +SLineBreak+ ', a.VIGINIANT, a.VIGFIMANT, a.PRECOANT, a.QTALT, a.CONFRMD '+SLineBreak+
+    'FROM LPDDBICE.PPSCONSOL a '+SLineBreak+ leftjoin +SLineBreak+
+    'WHERE a.PPSID = '+IDPROC+' )vw ';
+
+
+    lQue.Close;
+    lQue.SQL.Clear;
+    lQue.SQL.Text := SQL;
+
+    aux.saveTXT(SQL, 'sql_ListarAliquotas.sql');
+
+    lQue.Open;
+
+    Result := lQue;
+  finally
+
+
+  end;
+
+
+end;
+
+function TDM.ListarAliquotas2(): TADOQuery;
+var
+  lQue: TADOQuery;
+  SQL: string;
+  filtro: string;
+begin
+
+  conecta();
+  lQue := TADOQuery.Create(nil);
+  lQue.Connection := CONN;
+  lQue.SQL.Clear;
+  filtro:= '';
+
+
+  TRY
+  try
+
+
+    if filtroConsolidacao='todos' then
+      filtro:= '';
+    if filtroConsolidacao='alterados' then
+      filtro:= 'and QTALT > 0';
+
+
+
+
+    SQL:=
+    'Select                                           '+SLineBreak+
+    '  PPSID, PPSEMP, PPSPRD, PPSVIGINI, PPSVIGFIM,   '+SLineBreak+
+    '  trim(PPSPRD)||PPSVIGINI||PPSVIGFIM KEY_LINE,   '+SLineBreak+
+    '  PPSICM ALIQ, PPSTP TP, PPSPRECO PRC,           '+SLineBreak+
+    '  PPSICM||trim(PPSTP) ID_COL,                    '+SLineBreak+
+    '  VIGINIANT, VIGFIMANT, PRECOANT, QTALT, CONFRMD '+SLineBreak+
+    'From                                             '+SLineBreak+
+    '  LPDDBICE.PPSCONSOL                             '+SLineBreak+
+    'Where                                            '+SLineBreak+
+    '  PPSID='+UserSession.GIDPROC+' and PPSICM > 0   '+SLineBreak+
+    '  '+filtro+'                                     '+SLineBreak+
+    '  and PPSPRD in('+QuotedStr('JFT')+','+QuotedStr('JGQ')+')'+SLineBreak;
+
+    if MY_ENV ='TST' then begin
+      SQL:= SQL.Replace(
+        'trim(PPSPRD)||PPSVIGINI||PPSVIGFIM KEY_LINE',
+        'concat(trim(PPSPRD), PPSVIGINI, PPSVIGFIM) as KEY_LINE'
+      );
+    end;
+
+
+
+    lQue.SQL.Add(SQL);
+    lQue.Open;
+
+  except
+    On E:Exception do begin
+      PROG_ENV.logICE.saveLog(PROG_ENV.INT_NAME+': Erro ao listar alíquotas (ListarAliquotas2). Erro ['+E.Message+']');
+    end;
+
+  end;
+
+  FINALLY
+    aux.saveTXT(SQL, 'sql_ListarAliquotas.sql');
+    Result := lQue;
+  END;
+
+
+end;
+
+
+
+function TDM.GetTotalColunasHist: integer;
+var
+  FQue: TADOQuery;
+  total: integer;
+begin
+
+  conecta();
+  FQue:= TADOQuery.Create(nil);
+  FQue.Connection := CONN;//ADOConn;
+  total:= 0;
+
+  try
+    FQue.SQL.Add('SELECT ');
+    FQue.SQL.Add('  SUM(REG) TOTAL ');
+    FQue.SQL.Add('FROM ');
+    FQue.SQL.Add('  (Select PPSICM, count(distinct PPSTP) REG ');
+    FQue.SQL.Add('   From (select distinct PPSTP, PPSICM From LPDDBICE.PPSHIST ');
+    FQue.SQL.Add('         where  PPSID='+UserSession.GIDPROC+' and PPSPRD='+QuotedStr(UserSession.GPPSPRD)+' and PPSICM > 0) X' );
+    FQue.SQL.Add('   Group by PPSICM ');
+    FQue.SQL.Add('  )vw ');
+    FQue.Open;
+    total:= FQue.FieldByName('TOTAL').AsInteger; //+ 1 id adicional action column
+  finally
+    FQue.Close;
+    FQue.Free;
+    Result:= total;
+  end;
+
+end;
+
+function TDM.ListTotColunasPorAliquotaHist: TADOQuery;
+var
+  lQue: TADOQuery;
+begin
+
+  conecta();
+  lQue := TADOQuery.Create(nil);
+  lQue.Connection := CONN; //ADOConn;
+  lQue.SQL.Clear;
+
+  try
+    lQue.SQL.Add('SELECT PPSICM, COUNT(DISTINCT PPSTP) TOTAL');
+    lQue.SQL.Add('FROM (Select DISTINCT PPSTP, PPSICM From LPDDBICE.PPSHIST ');
+    lQue.SQL.Add('      Where  PPSID='+UserSession.GIDPROC+' and PPSPRD='+QuotedStr(UserSession.GPPSPRD)+' and PPSICM > 0) X');
+    lQue.SQL.Add('GROUP BY PPSICM');
+    lQue.SQL.Add('ORDER BY PPSICM');
+    lQue.Open;
+    Result := lQue;
+  finally
+  end;
+
+end;
+
+function TDM.ListColunasPorAliquotaHist: TADOQuery;
+var
+  lQue: TADOQuery;
+begin
+
+  conecta();
+  lQue := TADOQuery.Create(nil);
+  lQue.Connection := CONN; //ADOConn;
+  lQue.SQL.Clear;
+
+  try
+    lQue.SQL.Add('SELECT PPSICM CAMPO, PPSTP VALOR FROM ');
+    lQue.SQL.Add('(SELECT DISTINCT PPSTP, PPSICM FROM LPDDBICE.PPSHIST ');
+    lQue.SQL.Add(' WHERE PPSID='+UserSession.GIDPROC+' and PPSPRD='+QuotedStr(UserSession.GPPSPRD)+' and PPSICM > 0) X');
+    lQue.SQL.Add('GROUP BY PPSICM, PPSTP');
+    lQue.SQL.Add('ORDER BY PPSICM');
+    lQue.Open;
+    Result := lQue;
+  finally
+  end;
+
+end;
+
+function TDM.ListarAliquotasHist(IDPROC, CDEMP, CDPROD: string): TADOQuery;
+var
+  lQue: TADOQuery;
+  sql, aliq, aliqt, tipo, leftjoin, campo, idField: string;
+begin
+
+  conecta();
+  lQue := TADOQuery.Create(nil);
+  lQue.Connection := CONN;//ADOConn;
+  lQue.SQL.Clear;
+
+  try
+    lQue.SQL.Add('SELECT PPSICM ALIQ, PPSTP TIPO ');
+    lQue.SQL.Add('FROM (Select DISTINCT PPSTP, PPSICM FROM LPDDBICE.PPSHIST ');
+    lQue.SQL.Add('      Where PPSID='+UserSession.GIDPROC+' and PPSPRD='+QuotedStr(UserSession.GPPSPRD)+' and PPSICM > 0) X');
+    lQue.SQL.Add('GROUP BY PPSICM, PPSTP');
+    lQue.SQL.Add('ORDER BY PPSICM, PPSTP');
+    lQue.Open;
+
+    sql := 'SELECT DISTINCT a.PPSID, a.PPSEMP, a.PPSPRD, a.PPSVIGINI, a.PPSVIGFIM ';
+
+    while not lQue.Eof do
+    begin
+      aliq  := lQue.FieldByName('ALIQ').AsString;
+      aliqt := aliq;
+      aliq  := aliq.Replace(',','');
+      aliqt := aliqt.Replace(',','.');
+      tipo  := lQue.FieldByName('TIPO').AsString.trim;
+      idField:= concat('a',aliq,tipo);
+      campo := campo + ',' + idField+'.PPSVLPRP';
+
+      leftjoin := leftjoin+
+                  ' LEFT JOIN LPDDBICE.PPSHIST ' + idField +
+                  ' ON  ('+idField+'.PPSPRD   = a.PPSPRD )'+
+                  ' AND ('+idField+'.PPSVIGINI= a.PPSVIGINI) AND ('+ idField+'.PPSVIGFIM=a.PPSVIGFIM) '+
+                  ' AND ('+idField+'.PPSICM   = '+QuotedStr(aliqt)+') AND ('+idField+'.PPSTP='+QuotedStr(tipo)+') '+
+                  ' and ('+idField+'.PPSID    = '+idproc+') '+SLineBreak;
+      lQue.Next;
+    end;
+
+    sql := sql + campo + ' FROM LPDDBICE.PPSHIST a '+ leftjoin + ' WHERE a.PPSID='+IDPROC+' AND a.PPSEMP= '+QuotedStr(CDEMP)+' AND a.PPSPRD='+QuotedStr(CDPROD);
+    lQue.Close;
+    lQue.SQL.Clear;
+    lQue.SQL.Text := SQL;
+    lQue.Open;
+
+    Result := lQue;
+  finally
+  end;
+
+end;
 
 
 
